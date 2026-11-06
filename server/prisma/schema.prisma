@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String       @id @default(uuid())
+  email                String       @unique
+  name                 String
+  passwordHash         String?      @map("password_hash")
+  role                 String       @default("USER") // USER | ADMIN
+  whatsappNumber       String?      @map("whatsapp_number")
+  whatsappVerifiedAt   DateTime?    @map("whatsapp_verified_at")
+  quotaRemaining       Int          @default(50) @map("quota_remaining")
+  status               String       @default("ACTIVE") // ACTIVE | SUSPENDED
+  googleId             String?      @unique @map("google_id")
+  emailVerified        Boolean      @default(false) @map("email_verified")
+  resetToken           String?      @map("reset_token")
+  resetTokenExpiresAt  DateTime?    @map("reset_token_expires_at")
+  whatsappCode         String?      @map("whatsapp_code")
+  whatsappCodeExpiresAt DateTime?   @map("whatsapp_code_expires_at")
+  refreshToken         String?      @map("refresh_token")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+
+  submissions          Submission[]
+  auditLogs            AuditLog[]
+
+  @@map("users")
+}
+
+model Submission {
+  id                   String          @id @default(uuid())
+  userId               String          @map("user_id")
+  text                 String
+  textHash             String          @map("text_hash")
+  wordCount            Int             @map("word_count")
+  sourceType           String          @default("PASTE") @map("source_type") // PASTE | TXT | DOCX | PDF
+  status               String          @default("QUEUED") // QUEUED | RUNNING | PARTIAL | COMPLETE | FAILED
+  deliveryEmail        Boolean         @default(false) @map("delivery_email")
+  deliveryWhatsapp     Boolean         @default(false) @map("delivery_whatsapp")
+  deliveryEmailAddress String?         @map("delivery_email_address")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  completedAt          DateTime?       @map("completed_at")
+
+  user                 User            @relation(fields: [userId], references: [id])
+  providerResults      ProviderResult[]
+  report               Report?
+
+  @@index([userId])
+  @@index([textHash])
+  @@map("submissions")
+}
+
+model ProviderResult {
+  id                   String       @id @default(uuid())
+  submissionId         String       @map("submission_id")
+  provider             String       // GPTZERO | COPYLEAKS | SAPLING | ORIGINALITY | WINSTON
+  status               String       @default("OK") // OK | FAILED | TIMEOUT
+  aiScore              Float?       @map("ai_score") // 0-100
+  label                String?      // HUMAN | MIXED | AI
+  sentenceData         String?      @map("sentence_data") // JSON string
+  rawResponse          String?      @map("raw_response") // JSON string
+  latencyMs            Int?         @map("latency_ms")
+  cost                 Float?
+  createdAt            DateTime     @default(now()) @map("created_at")
+
+  submission           Submission   @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@map("provider_results")
+}
+
+model Report {
+  id                   String       @id @default(uuid())
+  submissionId         String       @unique @map("submission_id")
+  combinedScore        Float        @map("combined_score")
+  verdict              String       // LIKELY_HUMAN | MIXED | LIKELY_AI
+  agreement            String       // HIGH | MEDIUM | LOW
+  pdfUrl               String?      @map("pdf_url")
+  createdAt            DateTime     @default(now()) @map("created_at")
+
+  submission           Submission   @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  deliveries           Delivery[]
+
+  @@map("reports")
+}
+
+model Delivery {
+  id                   String       @id @default(uuid())
+  reportId             String       @map("report_id")
+  channel              String       // EMAIL | WHATSAPP
+  destination          String
+  status               String       @default("PENDING") // PENDING | SENT | DELIVERED | READ | FAILED
+  providerMessageId    String?      @map("provider_message_id")
+  error                String?
+  sentAt               DateTime?    @map("sent_at")
+  createdAt            DateTime     @default(now()) @map("created_at")
+
+  report               Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@map("deliveries")
+}
+
+model Provider {
+  id                   String       @id @default(uuid())
+  name                 String       @unique
+  enabled              Boolean      @default(true)
+  weight               Float        @default(1.0)
+  health               String       @default("HEALTHY") // HEALTHY | DEGRADED | DOWN
+  createdAt            DateTime     @default(now()) @map("created_at")
+
+  @@map("providers")
+}
+
+model AuditLog {
+  id                   String       @id @default(uuid())
+  adminId              String       @map("admin_id")
+  action               String
+  targetType           String?      @map("target_type")
+  targetId             String?      @map("target_id")
+  ip                   String?
+  createdAt            DateTime     @default(now()) @map("created_at")
+
+  admin                User         @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@map("audit_logs")
+}
