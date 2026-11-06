@@ -28,15 +28,6 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleDemoFill = (role: 'admin' | 'user') => {
-    if (role === 'admin') {
-      setEmail('admin@tmq.com');
-      setPassword('admin123');
-    } else {
-      setEmail('user@tmq.com');
-      setPassword('user123');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-parchment flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -104,27 +95,6 @@ export const Login: React.FC = () => {
               {loading ? 'Verifying...' : 'Access Desk'}
             </button>
           </form>
-
-          {/* Quick Demo Credentials */}
-          <div className="mt-6 pt-5 border-t border-moss/20">
-            <p className="text-xs text-center text-ink/60 font-serif mb-2">Quick Demo Access:</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => handleDemoFill('admin')}
-                className="flex-1 py-1.5 px-3 text-xs font-medium border border-forest/30 rounded bg-moss/10 hover:bg-moss/20 text-forest transition"
-              >
-                Founder Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDemoFill('user')}
-                className="flex-1 py-1.5 px-3 text-xs font-medium border border-forest/30 rounded bg-moss/10 hover:bg-moss/20 text-forest transition"
-              >
-                Literary Editor
-              </button>
-            </div>
-          </div>
 
           <div className="mt-5 text-center">
             <Link to="/register" className="text-xs text-moss hover:text-forest underline font-medium">
