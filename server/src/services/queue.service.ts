@@ -35,12 +35,18 @@ export class QueueService {
         const activeProviders = enabledProviders.length > 0
           ? enabledProviders
           : [
+              { id: '0', name: 'TMQ_SPECIAL', weight: 1.5 },
               { id: '1', name: 'GPTZERO', weight: 1.0 },
               { id: '2', name: 'COPYLEAKS', weight: 1.0 },
               { id: '3', name: 'SAPLING', weight: 1.0 },
               { id: '4', name: 'ORIGINALITY', weight: 1.0 },
               { id: '5', name: 'WINSTON', weight: 1.0 },
             ];
+
+        // Ensure TMQ_SPECIAL is always included in evaluation
+        if (!activeProviders.some(p => p.name === 'TMQ_SPECIAL')) {
+          activeProviders.unshift({ id: 'tmq_special_auto', name: 'TMQ_SPECIAL', weight: 1.5 } as any);
+        }
 
         // 3. Run detectors in parallel
         const promises = activeProviders.map(async (p) => {

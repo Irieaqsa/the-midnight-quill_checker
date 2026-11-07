@@ -65,6 +65,17 @@ export const ReportView: React.FC = () => {
     ? `https://wa.me/${userPhone}?text=${waText}`
     : `https://wa.me/?text=${waText}`;
 
+  // Parse TMQ Special Algorithm data if present in provider results
+  const tmqSpecialRaw = providerResults.find((p: any) => p.provider === 'TMQ_SPECIAL')?.rawResponse;
+  const tmqSpecialData = tmqSpecialRaw
+    ? (() => {
+        try {
+          return typeof tmqSpecialRaw === 'string' ? JSON.parse(tmqSpecialRaw) : tmqSpecialRaw;
+        } catch {
+          return null;
+        }
+      })()
+    : null;
   return (
     <div className="space-y-6">
       {/* Top back action */}
@@ -182,6 +193,133 @@ export const ReportView: React.FC = () => {
             ))}
           </div>
         </div>
+
+                {/* TMQ Special Editorial Algorithm Section (Part 1, 2, 3) */}
+        {tmqSpecialData && (
+          <div className="mb-8 p-6 bg-white/90 border-2 border-forest/30 rounded-xl shadow-sm space-y-6 font-sans">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-forest/20 pb-4">
+              <div>
+                <div className="inline-block px-2.5 py-0.5 bg-forest text-parchment rounded text-[10px] font-bold tracking-widest uppercase mb-1">
+                  TMQ Proprietary Forensic Engine
+                </div>
+                <h3 className="font-serif text-xl font-bold text-forest">TMQ Authenticity & Review Algorithm (v1)</h3>
+                <p className="text-xs text-ink/70">
+                  Genre: <span className="font-bold text-forest">{tmqSpecialData.genre}</span> &bull; Words: {tmqSpecialData.wordCount}
+                  {tmqSpecialData.intakeNote && <span className="text-amber ml-2 font-medium">({tmqSpecialData.intakeNote})</span>}
+                </p>
+              </div>
+
+              <div className="text-right sm:text-right">
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  tmqSpecialData.band === 'Likely human' || tmqSpecialData.band === 'Probably human'
+                    ? 'bg-moss/20 text-forest border border-moss/40'
+                    : tmqSpecialData.band === 'Uncertain'
+                    ? 'bg-amber/20 text-amber border border-amber/40'
+                    : 'bg-red-100 text-red-800 border border-red-300'
+                }`}>
+                  {tmqSpecialData.band} ({tmqSpecialData.finalScore}/100)
+                </span>
+                <p className="text-[11px] text-ink/60 mt-0.5">Action: {tmqSpecialData.action}</p>
+              </div>
+            </div>
+
+            {/* Part 2: Quality & Emotional Bias */}
+            {tmqSpecialData.quality && (
+              <div className="p-4 bg-parchment/60 border border-moss/20 rounded-lg grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-ink/60">Quality Rating</div>
+                  <div className="font-serif text-2xl font-bold text-forest">{tmqSpecialData.quality.finalRating}/100</div>
+                  <div className="text-[9px] text-ink/50">Base: {tmqSpecialData.quality.baseRating}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-ink/60">Emotional Impact</div>
+                  <div className="font-mono text-xl font-bold text-forest">{tmqSpecialData.quality.emotionalImpact}/10</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-ink/60">Earned Emotion</div>
+                  <div className="font-mono text-xl font-bold text-forest">{tmqSpecialData.quality.earnedEmotion}/10</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-ink/60">Emotional Bias (EB)</div>
+                  <div className={`font-mono text-xl font-bold ${tmqSpecialData.quality.emotionalBias > 2 ? 'text-amber' : 'text-forest'}`}>
+                    {tmqSpecialData.quality.emotionalBias > 0 ? `+${tmqSpecialData.quality.emotionalBias}` : tmqSpecialData.quality.emotionalBias}
+                  </div>
+                  <div className="text-[9px] text-ink/50">Adj: {tmqSpecialData.quality.ebAdjustment > 0 ? `+${tmqSpecialData.quality.ebAdjustment}` : tmqSpecialData.quality.ebAdjustment} pts</div>
+                </div>
+              </div>
+            )}
+
+            {/* Part 3: Computable Linguistic Features */}
+            {tmqSpecialData.features && (
+              <div>
+                <h4 className="text-xs font-bold text-forest uppercase tracking-wider mb-2">Computable Forensic Features</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                  <div className="p-2.5 bg-white border border-moss/10 rounded">
+                    <span className="text-ink/60 block text-[10px]">Sentence Length SD:</span>
+                    <span className="font-bold text-forest">{tmqSpecialData.features.sentenceLengthSd} words</span>
+                  </div>
+                  <div className="p-2.5 bg-white border border-moss/10 rounded">
+                    <span className="text-ink/60 block text-[10px]">Type-Token Ratio:</span>
+                    <span className="font-bold text-forest">{tmqSpecialData.features.typeTokenRatio}</span>
+                  </div>
+                  <div className="p-2.5 bg-white border border-moss/10 rounded">
+                    <span className="text-ink/60 block text-[10px]">Em-dash per 1k:</span>
+                    <span className="font-bold text-forest">{tmqSpecialData.features.emDashPer1000}</span>
+                  </div>
+                  <div className="p-2.5 bg-white border border-moss/10 rounded">
+                    <span className="text-ink/60 block text-[10px]">Named Entity Density:</span>
+                    <span className="font-bold text-forest">{tmqSpecialData.features.namedEntityDensity}/1k</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Part 1: Signal Families & Counter-Evidence */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-xs font-bold text-forest uppercase tracking-wider mb-2">10 Signal Families (AI Indicators)</h4>
+                <div className="space-y-1.5 text-xs">
+                  {Object.entries(tmqSpecialData.signalFamilies || {}).map(([key, val]: any) => (
+                    <div key={key} className="p-2 bg-white/80 border border-moss/15 rounded flex justify-between items-center">
+                      <span className="text-ink/80 text-[11px] truncate max-w-[220px]">
+                        {key.replace('family', '').replace(/([A-Z])/g, ' $1').trim()}
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[10px] text-ink/40">(Wt: {val.weight})</span>
+                        <span className={`font-mono font-bold text-xs ${val.score >= 6 ? 'text-red-700' : val.score >= 3 ? 'text-amber' : 'text-forest'}`}>
+                          {val.score}/10
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-bold text-forest uppercase tracking-wider mb-2">Human Counter-Evidence Subtractions</h4>
+                <div className="p-3 bg-moss/5 border border-moss/20 rounded-lg space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-moss font-bold border-b border-moss/20 pb-1.5">
+                    <span>Evidence Credit Subtracted:</span>
+                    <span className="font-mono text-sm">-{tmqSpecialData.humanCounterEvidence?.pointsSubtracted || 0} pts</span>
+                  </div>
+                  {tmqSpecialData.humanCounterEvidence?.items?.length > 0 ? (
+                    <ul className="list-disc list-inside space-y-1 text-ink/80 text-[11px]">
+                      {tmqSpecialData.humanCounterEvidence.items.map((item: string, i: number) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[11px] text-ink/50 italic">No counter-evidence particulars identified.</p>
+                  )}
+
+                  <div className="pt-2 border-t border-moss/10 text-[10px] text-ink/60">
+                    <strong>Corroboration Rule:</strong> {tmqSpecialData.corroborated ? 'Met (>= 3 families >= 6)' : 'Protected (Single signals cannot trigger suspicion)'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Evaluated Manuscript Text Appendix */}
         <div className="mt-8 pt-6 border-t border-forest/20">

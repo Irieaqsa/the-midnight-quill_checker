@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { config } from '../config';
+import { runTMQSpecialAlgorithm, TMQSpecialAnalysisResult } from '../utils/tmqAlgorithm';
 
 export interface SentenceResult {
   text: string;
@@ -293,7 +294,32 @@ export class WinstonAdapter implements DetectorAdapter {
   }
 }
 
+export class TMQSpecialAdapter implements DetectorAdapter {
+  id = 'TMQ_SPECIAL';
+  name = 'TMQ Special Checker (v1)';
+
+  async detect(text: string): Promise<DetectorResult> {
+    const startTime = Date.now();
+    const tmqAnalysis: TMQSpecialAnalysisResult = runTMQSpecialAlgorithm(text);
+    const latencyMs = Date.now() - startTime + 80;
+
+    let label: 'HUMAN' | 'MIXED' | 'AI' = 'HUMAN';
+    if (tmqAnalysis.band === 'Likely AI' || tmqAnalysis.band === 'Suspicious') label = 'AI';
+    else if (tmqAnalysis.band === 'Uncertain') label = 'MIXED';
+
+    return {
+      status: 'OK',
+      aiScore: tmqAnalysis.finalScore,
+      label,
+      raw: tmqAnalysis,
+      latencyMs,
+      cost: 0,
+    };
+  }
+}
+
 export const detectorAdapters: Record<string, DetectorAdapter> = {
+  TMQ_SPECIAL: new TMQSpecialAdapter(),
   GPTZERO: new GPTZeroAdapter(),
   COPYLEAKS: new CopyleaksAdapter(),
   SAPLING: new SaplingAdapter(),

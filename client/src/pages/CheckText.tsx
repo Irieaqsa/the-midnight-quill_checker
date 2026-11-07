@@ -19,6 +19,7 @@ export const CheckText: React.FC = () => {
   const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
   const [statusState, setStatusState] = useState<'QUEUED' | 'RUNNING' | 'COMPLETE' | 'FAILED' | null>(null);
   const [detectorStatus, setDetectorStatus] = useState<Record<string, { status: string; score?: number }>>({
+    TMQ_SPECIAL: { status: 'PENDING' },
     GPTZERO: { status: 'PENDING' },
     COPYLEAKS: { status: 'PENDING' },
     SAPLING: { status: 'PENDING' },
