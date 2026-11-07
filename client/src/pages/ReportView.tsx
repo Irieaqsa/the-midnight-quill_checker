@@ -225,27 +225,109 @@ export const ReportView: React.FC = () => {
 
             {/* Part 2: Quality & Emotional Bias */}
             {tmqSpecialData.quality && (
-              <div className="p-4 bg-parchment/60 border border-moss/20 rounded-lg grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                <div>
-                  <div className="text-[10px] uppercase font-bold text-ink/60">Quality Rating</div>
-                  <div className="font-serif text-2xl font-bold text-forest">{tmqSpecialData.quality.finalRating}/100</div>
-                  <div className="text-[9px] text-ink/50">Base: {tmqSpecialData.quality.baseRating}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase font-bold text-ink/60">Emotional Impact</div>
-                  <div className="font-mono text-xl font-bold text-forest">{tmqSpecialData.quality.emotionalImpact}/10</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase font-bold text-ink/60">Earned Emotion</div>
-                  <div className="font-mono text-xl font-bold text-forest">{tmqSpecialData.quality.earnedEmotion}/10</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase font-bold text-ink/60">Emotional Bias (EB)</div>
-                  <div className={`font-mono text-xl font-bold ${tmqSpecialData.quality.emotionalBias > 2 ? 'text-amber' : 'text-forest'}`}>
-                    {tmqSpecialData.quality.emotionalBias > 0 ? `+${tmqSpecialData.quality.emotionalBias}` : tmqSpecialData.quality.emotionalBias}
+              <div className="space-y-4">
+                <div className="p-4 bg-parchment/60 border border-moss/20 rounded-lg grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-ink/60">Quality Rating</div>
+                    <div className="font-serif text-2xl font-bold text-forest">
+                      {tmqSpecialData.quality.finalRating}/100
+                    </div>
+                    <div className="text-[10px] font-semibold text-moss mt-0.5">
+                      Band: {tmqSpecialData.quality.band || 'Standard'}
+                    </div>
+                    <div className="text-[9px] text-ink/50">
+                      Raw: {tmqSpecialData.quality.earnedRaw || tmqSpecialData.quality.baseRating} / {tmqSpecialData.quality.availableRaw || 70} ({tmqSpecialData.quality.percentage || tmqSpecialData.quality.baseRating}%)
+                    </div>
                   </div>
-                  <div className="text-[9px] text-ink/50">Adj: {tmqSpecialData.quality.ebAdjustment > 0 ? `+${tmqSpecialData.quality.ebAdjustment}` : tmqSpecialData.quality.ebAdjustment} pts</div>
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-ink/60">Emotional Impact</div>
+                    <div className="font-mono text-xl font-bold text-forest">{tmqSpecialData.quality.emotionalImpact}/10</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-ink/60">Earned Emotion</div>
+                    <div className="font-mono text-xl font-bold text-forest">{tmqSpecialData.quality.earnedEmotion}/10</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-ink/60">Emotional Bias (EB)</div>
+                    <div className={`font-mono text-xl font-bold ${tmqSpecialData.quality.emotionalBias > 2 ? 'text-amber' : 'text-forest'}`}>
+                      {tmqSpecialData.quality.emotionalBias > 0 ? `+${tmqSpecialData.quality.emotionalBias}` : tmqSpecialData.quality.emotionalBias}
+                    </div>
+                    <div className="text-[9px] text-ink/50">Adj: {tmqSpecialData.quality.ebAdjustment > 0 ? `+${tmqSpecialData.quality.ebAdjustment}` : tmqSpecialData.quality.ebAdjustment} pts</div>
+                  </div>
                 </div>
+
+                {/* Gate Alerts if applicable */}
+                {tmqSpecialData.quality.masterworkGated && (
+                  <div className="p-3 bg-amber/10 border-l-4 border-amber rounded text-xs text-ink/80">
+                    <strong>Masterwork Gate:</strong> {tmqSpecialData.quality.masterworkGateNotes}
+                  </div>
+                )}
+                {tmqSpecialData.quality.authenticityHeld && (
+                  <div className="p-3 bg-red-100 border-l-4 border-red-700 rounded text-xs text-red-900">
+                    <strong>Authenticity Gate:</strong> Part 1 returned {tmqSpecialData.band}. Quality rating held until human review.
+                  </div>
+                )}
+
+                {/* 13 Descriptive Metrics Rubric */}
+                {tmqSpecialData.quality.metrics && tmqSpecialData.quality.metrics.length > 0 && (
+                  <div className="border border-moss/20 rounded-lg overflow-hidden bg-white/50">
+                    <div className="px-4 py-2.5 bg-sage/20 border-b border-moss/20 flex justify-between items-center">
+                      <h5 className="text-xs font-bold font-serif text-forest uppercase tracking-wider">
+                        13 TMQ Quality Metrics (Scored out of {tmqSpecialData.quality.availableRaw || 70} Raw Points)
+                      </h5>
+                      <span className="text-[10px] font-mono text-ink/60">
+                        Total Earned: {tmqSpecialData.quality.earnedRaw} pts
+                      </span>
+                    </div>
+
+                    <div className="divide-y divide-moss/10 text-xs">
+                      {tmqSpecialData.quality.metrics.map((m: any, idx: number) => (
+                        <div key={idx} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-parchment/40 transition">
+                          <div className="space-y-0.5 max-w-md">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-bold text-forest">{m.name}</span>
+                              <span className="text-[10px] px-1.5 py-0.5 bg-forest/10 text-forest rounded font-mono uppercase">
+                                {m.group}
+                              </span>
+                              {m.isNA && (
+                                <span className="text-[10px] px-1.5 py-0.5 bg-amber/20 text-ink rounded font-mono">
+                                  N/A (Free verse/prose)
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-ink/70 italic">
+                              Evidence: {m.evidence}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center space-x-3 self-end sm:self-center">
+                            <span className="font-mono text-xs font-bold text-forest">
+                              {m.isNA ? '—' : `${m.score} / ${m.max}`}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* The Three Questions Summary */}
+                {tmqSpecialData.quality.threeQuestions && (
+                  <div className="p-3 bg-forest/5 border border-moss/20 rounded-lg grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <span className="font-bold text-forest block">1. Is it True?</span>
+                      <span className="text-ink/80 text-[11px]">{tmqSpecialData.quality.threeQuestions.isItTrue?.note || 'Voice, Specificity & Containment aligned'}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-forest block">2. Is it Specific?</span>
+                      <span className="text-ink/80 text-[11px]">{tmqSpecialData.quality.threeQuestions.isItSpecific?.note || 'Anchored in concrete detail'}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-forest block">3. Does it Move?</span>
+                      <span className="text-ink/80 text-[11px]">{tmqSpecialData.quality.threeQuestions.doesItMove?.note || 'Iceberg depth & musical pivot intact'}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
