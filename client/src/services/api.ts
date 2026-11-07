@@ -1,8 +1,13 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-// Cast import.meta as any to satisfy TypeScript build
-const metaEnv = (import.meta as any).env;
-const baseURL = (metaEnv && metaEnv.VITE_API_BASE_URL) || 'https://tmq-authenticity-api.onrender.com/api';
+// Normalize baseURL so it always points to the Express /api mount
+const rawEnvUrl = (import.meta as any).env?.VITE_API_BASE_URL;
+let baseURL = 'https://tmq-authenticity-api.onrender.com/api';
+
+if (rawEnvUrl) {
+  const trimmed = rawEnvUrl.replace(/\/+$/, '');
+  baseURL = trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+}
 
 const api = axios.create({
   baseURL,
