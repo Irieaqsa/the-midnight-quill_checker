@@ -126,7 +126,7 @@ export const History: React.FC = () => {
 
                     {item.report?.pdfUrl && (
                       <a
-                        href={`https://tmq-authenticity-api.onrender.com/api/submissions/${item.id}/report.pdf?token=${encodeURIComponent(localStorage.getItem('tmq_token') || '')}`}
+                        href={`https://tmq-authenticity-api.onrender.com${item.report.pdfUrl.startsWith('/') ? '' : '/'}${item.report.pdfUrl}`}
                         download={`TMQ_Report_${item.id}.pdf`}
                         target="_blank"
                         rel="noopener noreferrer"
