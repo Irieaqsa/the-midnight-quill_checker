@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { Feather, Send, Mail, Phone, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle2, Clock, Upload, ShieldCheck, Mail, Sparkles } from 'lucide-react';
 
 export const CheckText: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [text, setText] = useState('');
+  const [genre, setGenre] = useState<'POEM' | 'MONOLOGUE' | 'ESSAY'>('POEM');
   const [deliveryEmail, setDeliveryEmail] = useState(true);
   const [deliveryEmailAddress, setDeliveryEmailAddress] = useState(user?.email || '');
   const [deliveryWhatsapp, setDeliveryWhatsapp] = useState(false);
@@ -16,7 +17,6 @@ export const CheckText: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   // Live status tracking after submission
-  const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
   const [statusState, setStatusState] = useState<'QUEUED' | 'RUNNING' | 'COMPLETE' | 'FAILED' | null>(null);
   const [detectorStatus, setDetectorStatus] = useState<Record<string, { status: string; score?: number }>>({});
 
@@ -51,9 +51,8 @@ export const CheckText: React.FC = () => {
       });
 
       const submissionId = res.data.submissionId;
-      setActiveSubmissionId(submissionId);
 
-      // Initialize only the activated providers returned by server or fallback to active
+      // Initialize only active engines from response
       const activeList: string[] = res.data.activeProviders || ['TMQ_SPECIAL', 'SAPLING'];
       const initialMap: Record<string, { status: string; score?: number }> = {};
       activeList.forEach((provName: string) => {
@@ -61,14 +60,14 @@ export const CheckText: React.FC = () => {
       });
       setDetectorStatus(initialMap);
 
-      // Start SSE listening with token
+      // Start SSE listening
       const token = localStorage.getItem('tmq_token') || localStorage.getItem('tmq_access_token') || '';
       const apiBase = 'https://tmq-authenticity-api.onrender.com/api';
       const eventSource = new EventSource(`${apiBase}/submissions/${submissionId}/events?token=${encodeURIComponent(token)}`);
 
       let completed = false;
 
-      // Active polling fallback in case SSE connection drops through Cloudflare/Render proxies
+      // Fast active polling fallback
       const pollInterval = setInterval(async () => {
         if (completed) {
           clearInterval(pollInterval);
@@ -84,11 +83,11 @@ export const CheckText: React.FC = () => {
             navigate(`/report/${submissionId}`);
           }
         } catch (e) {
-          // ignore transient poll errors
+          // ignore transient poll error
         }
       }, 1200);
 
-      // Hard timeout fallback: redirect after 25s if backend finished or stuck
+      // Timeout fallback safeguard
       setTimeout(() => {
         if (!completed) {
           completed = true;
@@ -107,7 +106,7 @@ export const CheckText: React.FC = () => {
           try { eventSource.close(); } catch (e) {}
           setTimeout(() => {
             navigate(`/report/${submissionId}`);
-          }, 500);
+          }, 400);
         }
       });
 
@@ -120,7 +119,6 @@ export const CheckText: React.FC = () => {
       });
 
       eventSource.onerror = () => {
-        // SSE error, keep polling active to redirect once done
         eventSource.close();
       };
     } catch (err: any) {
@@ -132,148 +130,184 @@ export const CheckText: React.FC = () => {
 
   const handleSampleFill = () => {
     setText(
-      `In the quiet hours just before dawn, the mist settled over the cobblestones like a forgotten secret. Oliver tightened the woolen scarf around his neck, listening to the muffled toll of the parish bell. For thirty years, the quill shop had opened at precisely six o'clock, regardless of rain, revolution, or the encroaching hum of steam engines from the city's modern quarter.`
+      `Is that red Blood on my hands?\nAren't I the same guy who offer lands.\nIs it so hard to let me live?\nWhy can't critics be fair under the sleeve.\n\nI hope someday I can live normally,\nI hope anyone be my true ally.\nBelieve me I do cry, Don't attack me always,\nJust lemme live a bit, I've to die anyways.\n\nTime and again histories repeat,\nWhy can't a new one call me and meet.\nIt seems Joy lost my location,\nAll the happiness slips as I have a lotion.`
     );
   };
 
   return (
-    <div className="space-y-6">
-      {/* Title */}
-      <div className="bg-white/70 backdrop-blur-sm border border-moss/20 rounded-xl p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="font-serif text-2xl font-bold text-forest">Authenticity Inspection Desk</h1>
-            <p className="text-xs text-ink/70 mt-1">
-              Simultaneously scan your manuscript through GPTZero, Copyleaks, Sapling, Originality.ai & Winston AI.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleSampleFill}
-            className="self-start text-xs font-medium px-3 py-1.5 border border-moss/40 rounded-lg bg-sage/20 text-forest hover:bg-sage/40 transition"
-          >
-            Insert Sample Manuscript
-          </button>
-        </div>
+    <div className="max-w-[720px] mx-auto space-y-8 animate-fadeIn">
+      {/* Hero Section per DESIGN.md */}
+      <div className="space-y-3">
+        <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-tmq-brand block">
+          The Midnight Quill
+        </span>
+        <h1 className="text-3xl sm:text-4xl lg:text-[40px] font-semibold text-tmq-text-strong tracking-[-0.015em] leading-[1.15]">
+          Writing Authenticity Detector
+        </h1>
+        <p className="text-[16px] text-tmq-text-muted leading-[1.55]">
+          A calm, forensic review layer assessing 10 signal families, human counter-evidence, and 13 literary craft metrics.
+        </p>
       </div>
 
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-700 p-4 rounded text-sm text-red-800 flex items-center space-x-2">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+        <div className="bg-tmq-surface-2 border border-tmq-danger/30 rounded-md p-4 text-[14px] text-tmq-danger flex items-center space-x-2.5">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Main Submission Form */}
+      {/* Main Paste Card per DESIGN.md */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white/80 backdrop-blur-sm border border-moss/20 rounded-xl p-5 shadow-sm space-y-3">
-          <div className="flex justify-between items-center text-xs text-ink/60 font-medium">
-            <span>PASTE TEXT OR CHAPTER DRAFT</span>
-            <span className={isOverLimit ? 'text-red-700 font-bold' : 'text-moss'}>
-              {wordCount.toLocaleString()} / 10,000 words
-            </span>
+        <div className="tmq-card space-y-4">
+          {/* Genre Selector + Baseline Button */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-tmq-border-subtle pb-3">
+            <div className="flex items-center space-x-1.5 bg-tmq-surface-2 p-1 rounded-btn border border-tmq-border">
+              {(['POEM', 'MONOLOGUE', 'ESSAY'] as const).map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setGenre(g)}
+                  className={`px-3 py-1 rounded-sm text-[12px] font-semibold transition-colors ${
+                    genre === g
+                      ? 'bg-tmq-surface-3 text-tmq-text-strong shadow-sm'
+                      : 'text-tmq-text-muted hover:text-tmq-text'
+                  }`}
+                >
+                  {g.charAt(0) + g.slice(1).toLowerCase()}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={handleSampleFill}
+                className="btn-ghost text-[13px] text-tmq-brand hover:underline"
+              >
+                Insert Sample Draft
+              </button>
+              <button
+                type="button"
+                className="btn-secondary text-[12px] py-1 px-2.5 flex items-center space-x-1"
+                title="Optional verified baseline comparison"
+              >
+                <Upload className="w-3.5 h-3.5 text-tmq-text-muted" />
+                <span>Upload baseline</span>
+              </button>
+            </div>
           </div>
 
-          <textarea
-            rows={12}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            disabled={submitting}
-            placeholder="Paste raw literary text, essay, or dialogue here for aggregate authenticity verification..."
-            className="w-full p-4 border border-moss/30 rounded-lg font-serif text-sm bg-parchment/20 focus:outline-none focus:ring-2 focus:ring-forest leading-relaxed placeholder:font-sans"
-          />
-        </div>
+          {/* Large Textarea min 280px tall per DESIGN.md */}
+          <div className="space-y-2">
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Paste poem, chapter draft, essay, or monologue excerpt here..."
+              rows={12}
+              className="tmq-input min-h-[280px] text-[16px] leading-[1.55] font-sans resize-y bg-tmq-surface-2 placeholder:text-tmq-text-faint"
+            />
 
-        {/* Delivery Options */}
-        <div className="bg-white/80 backdrop-blur-sm border border-moss/20 rounded-xl p-5 shadow-sm">
-          <h3 className="font-serif font-bold text-sm text-forest mb-3">Delivery of Forensic Report & PDF Certificate</h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Email Option */}
-            <div className="p-3 border border-moss/20 rounded-lg bg-parchment/20">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={deliveryEmail}
-                  onChange={(e) => setDeliveryEmail(e.target.checked)}
-                  className="rounded text-forest focus:ring-forest"
-                />
-                <Mail className="w-4 h-4 text-forest" />
-                <span className="text-xs font-semibold text-ink">Deliver to Gmail / Email Inbox</span>
-              </label>
-
-              {deliveryEmail && (
-                <input
-                  type="email"
-                  value={deliveryEmailAddress}
-                  onChange={(e) => setDeliveryEmailAddress(e.target.value)}
-                  placeholder="name@example.com"
-                  className="mt-2 w-full text-xs p-2 border border-moss/30 rounded bg-white"
-                />
+            {/* Word count & intake hint */}
+            <div className="flex items-center justify-between text-[12px] text-tmq-text-soft">
+              <span>
+                {wordCount} words {wordCount > 0 && <span className="text-tmq-text-faint font-mono">&bull; {(text.length).toLocaleString()} chars</span>}
+              </span>
+              {wordCount > 0 && wordCount < 150 && (
+                <span className="text-tmq-warning flex items-center gap-1">
+                  <span>Add a little more text for a reliable read. (150+ words recommended)</span>
+                </span>
+              )}
+              {isOverLimit && (
+                <span className="text-tmq-danger font-semibold">Exceeds 10,000 word limit.</span>
               )}
             </div>
+          </div>
 
-            {/* WhatsApp Option */}
-            <div className="p-3 border border-moss/20 rounded-lg bg-parchment/20">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={deliveryWhatsapp}
-                  onChange={(e) => setDeliveryWhatsapp(e.target.checked)}
-                  className="rounded text-forest focus:ring-forest"
-                />
-                <Phone className="w-4 h-4 text-moss" />
-                <span className="text-xs font-semibold text-ink">Deliver to WhatsApp Number</span>
+          {/* Delivery destination settings */}
+          <div className="pt-3 border-t border-tmq-border-subtle grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="deliveryEmail"
+                checked={deliveryEmail}
+                onChange={(e) => setDeliveryEmail(e.target.checked)}
+                className="rounded text-tmq-brand focus:ring-tmq-brand bg-tmq-surface-2 border-tmq-border-strong w-4 h-4 cursor-pointer"
+              />
+              <label htmlFor="deliveryEmail" className="text-tmq-text cursor-pointer flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-tmq-text-muted" />
+                <span>Deliver verdict to Email</span>
               </label>
-              <p className="text-[11px] text-ink/60 mt-2">
-                Sends concise verdict slip & downloadable PDF document via Meta Cloud API.
-              </p>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="deliveryWhatsapp"
+                checked={deliveryWhatsapp}
+                onChange={(e) => setDeliveryWhatsapp(e.target.checked)}
+                className="rounded text-tmq-brand focus:ring-tmq-brand bg-tmq-surface-2 border-tmq-border-strong w-4 h-4 cursor-pointer"
+              />
+              <label htmlFor="deliveryWhatsapp" className="text-tmq-text cursor-pointer">
+                <span>Deliver link to WhatsApp</span>
+              </label>
             </div>
           </div>
         </div>
 
-        {/* Submit Button */}
+        {/* Primary Action Button per DESIGN.md: Green is the single loud element */}
         <div className="flex justify-end">
           <button
             type="submit"
             disabled={submitting || isOverLimit || wordCount === 0}
-            className="flex items-center space-x-2 px-8 py-3 bg-forest text-parchment font-serif font-bold rounded-xl shadow-md hover:bg-forest/90 disabled:opacity-50 transition"
+            className="btn-primary w-full sm:w-auto px-8 py-3 text-[15px] font-semibold tracking-[-0.005em] shadow-standard"
           >
-            <Send className="w-4 h-4" />
-            <span>{submitting ? 'Aggregating Algorithms...' : 'Execute Authenticity Scan'}</span>
+            {submitting ? (
+              <span className="flex items-center gap-2">
+                <Clock className="w-4 h-4 animate-spin text-tmq-on-brand" />
+                <span>Analysing writing...</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-tmq-on-brand" />
+                <span>Analyse writing</span>
+              </span>
+            )}
           </button>
         </div>
       </form>
 
-      {/* Live Pipeline Monitor Modal/Section */}
+      {/* Live Pipeline Monitor per DESIGN.md */}
       {submitting && (
-        <div className="bg-forest text-parchment rounded-xl p-6 shadow-lg border border-sage/30 animate-fadeIn">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-serif font-bold text-lg">Multi-Detector Engine Active</h3>
-            <span className="text-xs px-2.5 py-1 bg-moss/50 border border-sage/30 rounded-full font-mono uppercase tracking-wider">
-              Status: {statusState || 'PROCESSING'}
+        <div className="tmq-card border-tmq-border-strong space-y-4 animate-fadeIn">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[16px] font-semibold text-tmq-text-strong flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-tmq-brand" />
+              <span>Multi-Engine Inspection Active</span>
+            </h3>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-pill bg-tmq-brand-soft text-tmq-brand uppercase">
+              {statusState || 'PROCESSING'}
             </span>
           </div>
 
-          <p className="text-xs text-sage mb-5">
-            Your manuscript has fanned out across {Object.keys(detectorStatus).length || 2} active linguistic detection engines. Building aggregate report.
+          <p className="text-[13px] text-tmq-text-muted">
+            Manuscript fanned out across activated linguistic detection engines. Building consolidated report slip.
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {Object.entries(detectorStatus).map(([name, info]) => (
-              <div key={name} className="bg-black/20 p-3 rounded-lg border border-sage/10 text-center">
-                <div className="text-xs font-bold text-sage">{name}</div>
-                <div className="mt-2 flex items-center justify-center space-x-1">
+              <div key={name} className="bg-tmq-surface-2 p-3 rounded-md border border-tmq-border flex items-center justify-between">
+                <div>
+                  <div className="text-[12px] font-bold text-tmq-text-strong">{name}</div>
+                  <div className="text-[11px] text-tmq-text-soft font-mono">
+                    {info.score !== undefined ? `${info.score}% AI` : info.status}
+                  </div>
+                </div>
+                <div>
                   {info.status === 'OK' ? (
-                    <CheckCircle2 className="w-4 h-4 text-green-400" />
-                  ) : info.status === 'RUNNING' ? (
-                    <Clock className="w-4 h-4 text-amber animate-spin" />
+                    <CheckCircle2 className="w-4 h-4 text-tmq-brand" />
                   ) : (
-                    <Clock className="w-4 h-4 text-parchment/40" />
+                    <Clock className="w-4 h-4 text-tmq-warning animate-spin" />
                   )}
-                  <span className="text-[11px] font-mono">
-                    {info.score !== undefined ? `${info.score}%` : info.status}
-                  </span>
                 </div>
               </div>
             ))}

@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Feather, History, Shield, Users, Cpu, FileText, LogOut, CheckCircle2 } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
+import { Feather, History, Shield, Users, Cpu, FileText, LogOut, Sun, Moon } from 'lucide-react';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -16,150 +18,196 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-parchment text-ink flex flex-col font-sans">
-      {/* Top Banner */}
-      <header className="bg-forest text-parchment shadow-md border-b border-forest/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="p-2 bg-moss/40 rounded-full group-hover:bg-moss/60 transition">
-              <Feather className="w-5 h-5 text-parchment" />
+    <div className="min-h-screen bg-tmq-bg text-tmq-text flex flex-col font-sans selection:bg-tmq-brand-soft selection:text-tmq-brand">
+      {/* 64px Header Bar per DESIGN.md */}
+      <header className="h-16 bg-tmq-surface border-b border-tmq-border sticky top-0 z-50">
+        <div className="max-w-[1280px] mx-auto px-6 h-full flex items-center justify-between">
+          {/* TMQ Wordmark */}
+          <Link to="/check" className="flex items-center space-x-3 group">
+            <div className="w-8 h-8 rounded-btn bg-tmq-brand-soft border border-tmq-border flex items-center justify-center text-tmq-brand group-hover:bg-tmq-brand group-hover:text-tmq-on-brand transition-colors">
+              <Feather className="w-4 h-4" />
             </div>
             <div>
-              <span className="font-serif font-bold text-lg sm:text-xl tracking-tight block">THE MIDNIGHT QUILL</span>
-              <span className="text-[10px] uppercase tracking-widest text-sage block font-sans">Authenticity Desk</span>
+              <span className="font-bold text-[16px] tracking-tight text-tmq-text-strong block leading-none">
+                The Midnight Quill
+              </span>
+              <span className="text-[11px] font-mono uppercase tracking-[0.08em] text-tmq-text-soft block mt-0.5">
+                AI Detector
+              </span>
             </div>
           </Link>
 
-          <div className="flex items-center space-x-4">
-            {user && (
-              <div className="flex items-center space-x-3 text-xs sm:text-sm">
-                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-moss/30 border border-sage/40 text-sage font-medium">
-                  Quota: {user.quotaRemaining} checks
+          {/* Center Links */}
+          <nav className="hidden md:flex items-center space-x-1">
+            <Link
+              to="/check"
+              className={`px-3 py-1.5 rounded-btn text-[14px] font-medium transition-colors ${
+                isActive('/check')
+                  ? 'bg-tmq-surface-2 text-tmq-text-strong'
+                  : 'text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2'
+              }`}
+            >
+              Detector
+            </Link>
+            <Link
+              to="/history"
+              className={`px-3 py-1.5 rounded-btn text-[14px] font-medium transition-colors ${
+                isActive('/history')
+                  ? 'bg-tmq-surface-2 text-tmq-text-strong'
+                  : 'text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2'
+              }`}
+            >
+              History
+            </Link>
+            {user?.role === 'ADMIN' && (
+              <Link
+                to="/admin/dashboard"
+                className={`px-3 py-1.5 rounded-btn text-[14px] font-medium transition-colors ${
+                  isActive('/admin/dashboard')
+                    ? 'bg-tmq-surface-2 text-tmq-text-strong'
+                    : 'text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2'
+                }`}
+              >
+                Overseer
+              </Link>
+            )}
+          </nav>
+
+          {/* Right Area: Theme Toggle + User Info + Action */}
+          <div className="flex items-center space-x-3">
+            {/* Theme Switcher Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-btn text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2 border border-tmq-border transition-colors"
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-tmq-warning" /> : <Moon className="w-4 h-4 text-tmq-text" />}
+            </button>
+
+            {user ? (
+              <div className="flex items-center space-x-2.5">
+                <span className="hidden sm:inline-block text-[12px] font-mono px-2.5 py-1 rounded-pill bg-tmq-surface-2 border border-tmq-border text-tmq-text-muted">
+                  Quota: <strong className="text-tmq-text-strong">{user.quotaRemaining}</strong>
                 </span>
-                <span className="font-medium text-parchment/90">{user.name}</span>
-                <span className="px-2 py-0.5 text-[10px] rounded font-bold uppercase tracking-wider bg-sage text-forest">
-                  {user.role}
+                <span className="text-[13px] font-medium text-tmq-text-strong hidden md:inline">
+                  {user.name}
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="p-1.5 text-parchment/70 hover:text-parchment hover:bg-forest/50 rounded transition"
+                  className="p-2 rounded-btn text-tmq-text-soft hover:text-tmq-danger hover:bg-tmq-surface-2 border border-transparent hover:border-tmq-border transition-colors"
                   title="Sign Out"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
+            ) : (
+              <Link to="/login" className="btn-primary">
+                Sign In
+              </Link>
             )}
           </div>
         </div>
       </header>
 
-      {/* Main Container with Sidebar + Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col md:flex-row gap-6">
-        {/* Navigation Tabs */}
-        <aside className="w-full md:w-64 flex-shrink-0">
-          <nav className="bg-white/60 backdrop-blur-sm border border-moss/20 rounded-xl p-3 shadow-sm space-y-1">
-            <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-moss font-serif">
-              Editorial Desk
+      {/* Main Container - 1280px Page Width */}
+      <div className="max-w-[1280px] mx-auto px-6 py-8 w-full flex-1 flex flex-col md:flex-row gap-8">
+        {/* Sidebar Nav */}
+        <aside className="w-full md:w-56 flex-shrink-0">
+          <div className="bg-tmq-surface border border-tmq-border rounded-lg p-2.5 space-y-1">
+            <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-tmq-text-soft">
+              Desk Menu
             </div>
             <Link
               to="/check"
-              className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+              className={`flex items-center space-x-2.5 px-3 py-2 rounded-btn text-[14px] font-medium transition-colors ${
                 isActive('/check')
-                  ? 'bg-forest text-parchment shadow-sm'
-                  : 'text-ink/80 hover:bg-moss/10 hover:text-forest'
+                  ? 'bg-tmq-surface-2 text-tmq-text-strong font-semibold'
+                  : 'text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2'
               }`}
             >
-              <Feather className="w-4 h-4" />
-              <span>Submit Manuscript</span>
+              <Feather className="w-4 h-4 text-tmq-brand" />
+              <span>Analyse Writing</span>
             </Link>
 
             <Link
               to="/history"
-              className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+              className={`flex items-center space-x-2.5 px-3 py-2 rounded-btn text-[14px] font-medium transition-colors ${
                 isActive('/history')
-                  ? 'bg-forest text-parchment shadow-sm'
-                  : 'text-ink/80 hover:bg-moss/10 hover:text-forest'
+                  ? 'bg-tmq-surface-2 text-tmq-text-strong font-semibold'
+                  : 'text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2'
               }`}
             >
-              <History className="w-4 h-4" />
-              <span>Ledger & History</span>
+              <History className="w-4 h-4 text-tmq-text-muted" />
+              <span>Ledger History</span>
             </Link>
 
             {user?.role === 'ADMIN' && (
               <>
-                <div className="pt-4 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-amber font-serif">
-                  Founder Overseer (Admin)
+                <div className="pt-3 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-tmq-warning">
+                  Overseer Controls
                 </div>
                 <Link
                   to="/admin/dashboard"
-                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                  className={`flex items-center space-x-2.5 px-3 py-2 rounded-btn text-[14px] font-medium transition-colors ${
                     isActive('/admin/dashboard')
-                      ? 'bg-forest text-parchment shadow-sm'
-                      : 'text-ink/80 hover:bg-moss/10 hover:text-forest'
+                      ? 'bg-tmq-surface-2 text-tmq-text-strong font-semibold'
+                      : 'text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2'
                   }`}
                 >
-                  <Shield className="w-4 h-4" />
+                  <Shield className="w-4 h-4 text-tmq-brand" />
                   <span>Command Center</span>
                 </Link>
-
                 <Link
                   to="/admin/activity"
-                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                  className={`flex items-center space-x-2.5 px-3 py-2 rounded-btn text-[14px] font-medium transition-colors ${
                     isActive('/admin/activity')
-                      ? 'bg-forest text-parchment shadow-sm'
-                      : 'text-ink/80 hover:bg-moss/10 hover:text-forest'
+                      ? 'bg-tmq-surface-2 text-tmq-text-strong font-semibold'
+                      : 'text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2'
                   }`}
                 >
-                  <FileText className="w-4 h-4" />
+                  <FileText className="w-4 h-4 text-tmq-text-muted" />
                   <span>All Submissions</span>
                 </Link>
-
-                <Link
-                  to="/admin/users"
-                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
-                    isActive('/admin/users')
-                      ? 'bg-forest text-parchment shadow-sm'
-                      : 'text-ink/80 hover:bg-moss/10 hover:text-forest'
-                  }`}
-                >
-                  <Users className="w-4 h-4" />
-                  <span>Users & Quotas</span>
-                </Link>
-
                 <Link
                   to="/admin/detectors"
-                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                  className={`flex items-center space-x-2.5 px-3 py-2 rounded-btn text-[14px] font-medium transition-colors ${
                     isActive('/admin/detectors')
-                      ? 'bg-forest text-parchment shadow-sm'
-                      : 'text-ink/80 hover:bg-moss/10 hover:text-forest'
+                      ? 'bg-tmq-surface-2 text-tmq-text-strong font-semibold'
+                      : 'text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2'
                   }`}
                 >
-                  <Cpu className="w-4 h-4" />
+                  <Cpu className="w-4 h-4 text-tmq-text-muted" />
                   <span>Detector Tuning</span>
                 </Link>
-
                 <Link
-                  to="/admin/audit"
-                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
-                    isActive('/admin/audit')
-                      ? 'bg-forest text-parchment shadow-sm'
-                      : 'text-ink/80 hover:bg-moss/10 hover:text-forest'
+                  to="/admin/users"
+                  className={`flex items-center space-x-2.5 px-3 py-2 rounded-btn text-[14px] font-medium transition-colors ${
+                    isActive('/admin/users')
+                      ? 'bg-tmq-surface-2 text-tmq-text-strong font-semibold'
+                      : 'text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2'
                   }`}
                 >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Forensic Audit Log</span>
+                  <Users className="w-4 h-4 text-tmq-text-muted" />
+                  <span>Users & Quotas</span>
                 </Link>
               </>
             )}
-          </nav>
+          </div>
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1 min-w-0">{children}</main>
+        <main className="flex-1 min-w-0">
+          {children}
+        </main>
       </div>
 
-      <footer className="border-t border-moss/10 py-6 text-center text-xs text-ink/60 font-serif">
-        The Midnight Quill Authenticity Desk &copy; 2026 &mdash; Built with zero-AI writing screening standards.
+      {/* Footer per DESIGN.md */}
+      <footer className="border-t border-tmq-border py-6 bg-tmq-surface text-center text-[12px] text-tmq-text-soft">
+        <div className="max-w-[1280px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span>The Midnight Quill AI Detector &copy; 2026 &mdash; Built with literary authenticity standards.</span>
+          <span className="font-mono text-[11px] text-tmq-text-faint">Probability, not proof. A human reviews every flag.</span>
+        </div>
       </footer>
     </div>
   );
