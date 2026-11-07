@@ -209,18 +209,26 @@ export class SaplingAdapter implements DetectorAdapter {
       const latencyMs = Date.now() - startTime;
       const score = Math.round((response.data?.score || 0) * 100);
       let label: 'HUMAN' | 'MIXED' | 'AI' = 'HUMAN';
-      if (score > 60) label = 'AI';
-      else if (score >= 20) label = 'MIXED';
+      if (response.data?.verdict === 'human' || score < 20) label = 'HUMAN';
+      else if (score > 60) label = 'AI';
+      else label = 'MIXED';
+
+      const sentenceData: SentenceResult[] = (response.data?.sentence_scores || []).map((s: any) => ({
+        text: s.sentence,
+        aiScore: Math.round((s.score || 0) * 100),
+      }));
 
       return {
         status: 'OK',
         aiScore: score,
         label,
+        sentenceData,
         raw: response.data,
         latencyMs,
         cost: 0.008,
       };
-    } catch (err) {
+    } catch (err: any) {
+      console.error('[Sapling Live API Error]:', err?.response?.data || err.message);
       return this.mockDetect(text, startTime);
     }
   }
