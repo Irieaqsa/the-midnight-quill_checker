@@ -18,14 +18,7 @@ export const CheckText: React.FC = () => {
   // Live status tracking after submission
   const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
   const [statusState, setStatusState] = useState<'QUEUED' | 'RUNNING' | 'COMPLETE' | 'FAILED' | null>(null);
-  const [detectorStatus, setDetectorStatus] = useState<Record<string, { status: string; score?: number }>>({
-    TMQ_SPECIAL: { status: 'PENDING' },
-    GPTZERO: { status: 'PENDING' },
-    COPYLEAKS: { status: 'PENDING' },
-    SAPLING: { status: 'PENDING' },
-    ORIGINALITY: { status: 'PENDING' },
-    WINSTON: { status: 'PENDING' },
-  });
+  const [detectorStatus, setDetectorStatus] = useState<Record<string, { status: string; score?: number }>>({});
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const isOverLimit = wordCount > 10000;
@@ -59,6 +52,14 @@ export const CheckText: React.FC = () => {
 
       const submissionId = res.data.submissionId;
       setActiveSubmissionId(submissionId);
+
+      // Initialize only the activated providers returned by server or fallback to active
+      const activeList: string[] = res.data.activeProviders || ['TMQ_SPECIAL', 'SAPLING'];
+      const initialMap: Record<string, { status: string; score?: number }> = {};
+      activeList.forEach((provName: string) => {
+        initialMap[provName] = { status: 'PENDING' };
+      });
+      setDetectorStatus(initialMap);
 
       // Start SSE listening with token
       const token = localStorage.getItem('tmq_token') || localStorage.getItem('tmq_access_token') || '';
@@ -255,10 +256,10 @@ export const CheckText: React.FC = () => {
           </div>
 
           <p className="text-xs text-sage mb-5">
-            Your manuscript has fanned out across 5 independent linguistic neural networks. Building aggregate report.
+            Your manuscript has fanned out across {Object.keys(detectorStatus).length || 2} active linguistic detection engines. Building aggregate report.
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {Object.entries(detectorStatus).map(([name, info]) => (
               <div key={name} className="bg-black/20 p-3 rounded-lg border border-sage/10 text-center">
                 <div className="text-xs font-bold text-sage">{name}</div>

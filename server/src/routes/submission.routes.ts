@@ -62,11 +62,26 @@ router.post('/', authenticate, async (req: AuthenticatedRequest, res: Response):
     // Start background processing
     QueueService.processSubmissionAsync(submission.id);
 
+    // Fetch active providers so client knows exactly which engines are running
+    const enabledProviders = await prisma.provider.findMany({
+      where: { enabled: true },
+      select: { name: true, weight: true }
+    });
+
+    const activeProviderNames = enabledProviders.length > 0
+      ? enabledProviders.map(p => p.name)
+      : ['TMQ_SPECIAL', 'SAPLING'];
+
+    if (!activeProviderNames.includes('TMQ_SPECIAL')) {
+      activeProviderNames.unshift('TMQ_SPECIAL');
+    }
+
     res.status(202).json({
       message: 'Submission accepted for multi-detector aggregation.',
       submissionId: submission.id,
       wordCount,
       status: 'QUEUED',
+      activeProviders: activeProviderNames,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
