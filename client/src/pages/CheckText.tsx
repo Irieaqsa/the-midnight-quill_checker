@@ -59,9 +59,10 @@ export const CheckText: React.FC = () => {
       const submissionId = res.data.submissionId;
       setActiveSubmissionId(submissionId);
 
-      // Start SSE listening
-      const apiBase = ((import.meta as any).env?.VITE_API_BASE_URL) || 'https://tmq-authenticity-api.onrender.com/api';
-      const eventSource = new EventSource(`${apiBase}/submissions/${submissionId}/events`);
+      // Start SSE listening with token
+      const token = localStorage.getItem('tmq_token') || localStorage.getItem('tmq_access_token') || '';
+      const apiBase = 'https://tmq-authenticity-api.onrender.com/api';
+      const eventSource = new EventSource(`${apiBase}/submissions/${submissionId}/events?token=${encodeURIComponent(token)}`);
 
       eventSource.addEventListener('status', (e: any) => {
         const data = JSON.parse(e.data);

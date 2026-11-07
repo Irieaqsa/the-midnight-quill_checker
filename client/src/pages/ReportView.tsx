@@ -58,8 +58,10 @@ export const ReportView: React.FC = () => {
 
         {report.pdfUrl && (
           <a
-            href={`${((import.meta as any).env?.VITE_API_BASE_URL) || 'https://tmq-authenticity-api.onrender.com/api'}/submissions/${submission.id}/report.pdf`}
-            download
+            href={`https://tmq-authenticity-api.onrender.com/api/submissions/${submission.id}/report.pdf?token=${encodeURIComponent(localStorage.getItem('tmq_token') || '')}`}
+            download={`TMQ_Report_${submission.id}.pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center space-x-1.5 px-4 py-2 bg-forest text-parchment rounded-lg text-xs font-bold shadow hover:bg-forest/90 transition font-serif"
           >
             <Download className="w-3.5 h-3.5" />
