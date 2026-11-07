@@ -126,7 +126,7 @@ export const History: React.FC = () => {
 
                     {item.report?.pdfUrl && (
                       <a
-                        href={`http://localhost:3001/api/submissions/${item.id}/report.pdf`}
+                        href={`${((import.meta as any).env?.VITE_API_BASE_URL) || 'https://tmq-authenticity-api.onrender.com/api'}/submissions/${item.id}/report.pdf`}
                         download
                         className="p-1.5 border border-moss/30 rounded text-moss hover:bg-moss/10 transition"
                         title="Download PDF"

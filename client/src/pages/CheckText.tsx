@@ -60,7 +60,8 @@ export const CheckText: React.FC = () => {
       setActiveSubmissionId(submissionId);
 
       // Start SSE listening
-      const eventSource = new EventSource(`http://localhost:3001/api/submissions/${submissionId}/events`);
+      const apiBase = ((import.meta as any).env?.VITE_API_BASE_URL) || 'https://tmq-authenticity-api.onrender.com/api';
+      const eventSource = new EventSource(`${apiBase}/submissions/${submissionId}/events`);
 
       eventSource.addEventListener('status', (e: any) => {
         const data = JSON.parse(e.data);

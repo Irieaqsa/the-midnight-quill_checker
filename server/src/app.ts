@@ -12,7 +12,31 @@ const app = express();
 
 // Security and CORS
 app.use(helmet({ crossOriginResourcePolicy: false }));
-app.use(cors({ origin: '*', credentials: true }));
+
+const allowedOrigins = [
+  'https://tmq-checker.vercel.app',
+  'https://client-ecru-nine-91.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like curl, Postman, mobile apps)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(null, true); // Allow all for now during debugging
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// Explicitly handle preflight for all routes
+app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

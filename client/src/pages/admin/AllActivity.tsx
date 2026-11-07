@@ -33,7 +33,7 @@ export const AllActivity: React.FC = () => {
         </div>
 
         <a
-          href="http://localhost:3001/api/admin/export.csv"
+          href={`${((import.meta as any).env?.VITE_API_BASE_URL) || 'https://tmq-authenticity-api.onrender.com/api'}/admin/export.csv`}
           download
           className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-moss text-parchment rounded-lg text-xs font-semibold shadow hover:bg-moss/90 transition"
         >
