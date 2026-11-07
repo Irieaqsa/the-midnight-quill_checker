@@ -64,14 +64,38 @@ export const CheckText: React.FC = () => {
       const apiBase = 'https://tmq-authenticity-api.onrender.com/api';
       const eventSource = new EventSource(`${apiBase}/submissions/${submissionId}/events?token=${encodeURIComponent(token)}`);
 
+      let completed = false;
+
+      // Active polling fallback in case SSE connection drops through Cloudflare/Render proxies
+      const pollInterval = setInterval(async () => {
+        if (completed) {
+          clearInterval(pollInterval);
+          return;
+        }
+        try {
+          const checkRes = await api.get(`/submissions/${submissionId}`);
+          const sub = checkRes.data?.submission;
+          if (sub && sub.status === 'COMPLETE') {
+            completed = true;
+            clearInterval(pollInterval);
+            eventSource.close();
+            navigate(`/report/${submissionId}`);
+          }
+        } catch (e) {
+          // ignore transient poll errors
+        }
+      }, 1500);
+
       eventSource.addEventListener('status', (e: any) => {
         const data = JSON.parse(e.data);
         setStatusState(data.status);
         if (data.status === 'COMPLETE') {
+          completed = true;
+          clearInterval(pollInterval);
           eventSource.close();
           setTimeout(() => {
             navigate(`/report/${submissionId}`);
-          }, 1200);
+          }, 800);
         }
       });
 
@@ -84,10 +108,7 @@ export const CheckText: React.FC = () => {
       });
 
       eventSource.onerror = () => {
-        // Fallback polling after 4 seconds
-        setTimeout(() => {
-          navigate(`/report/${submissionId}`);
-        }, 4000);
+        // SSE error, keep polling active to redirect once done
         eventSource.close();
       };
     } catch (err: any) {
