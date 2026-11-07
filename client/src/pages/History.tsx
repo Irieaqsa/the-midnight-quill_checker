@@ -124,6 +124,20 @@ export const History: React.FC = () => {
                       <span>Review Slip</span>
                     </Link>
 
+                    {item.report && (
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(
+                          `*TMQ Authenticity Desk Report*\nID: #${item.id.slice(0, 8)}\nScore: ${item.report.combinedScore}% (${item.report.verdict})\nPDF: https://tmq-authenticity-api.onrender.com${item.report.pdfUrl}`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 border border-[#25D366]/40 text-[#1EBE5D] hover:bg-[#25D366]/10 rounded transition"
+                        title="Share Report to WhatsApp"
+                      >
+                        <span className="text-xs font-bold leading-none">WA</span>
+                      </a>
+                    )}
+
                     {item.report?.pdfUrl && (
                       <a
                         href={`https://tmq-authenticity-api.onrender.com${item.report.pdfUrl.startsWith('/') ? '' : '/'}${item.report.pdfUrl}`}

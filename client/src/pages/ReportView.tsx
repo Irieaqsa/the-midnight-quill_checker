@@ -44,10 +44,31 @@ export const ReportView: React.FC = () => {
   const providerResults = submission.providerResults || [];
   const user = submission.user;
 
+  // Build WhatsApp share link
+  const pdfDownloadUrl = report.pdfUrl 
+    ? `https://tmq-authenticity-api.onrender.com${report.pdfUrl.startsWith('/') ? '' : '/'}${report.pdfUrl}`
+    : '';
+
+  const waText = encodeURIComponent(
+    `*The Midnight Quill - Authenticity Desk Report*\n\n` +
+    `*Submission ID:* #${submission.id.slice(0, 8)}\n` +
+    `*Combined AI Likelihood:* ${report.combinedScore}%\n` +
+    `*Editorial Verdict:* ${report.verdict}\n` +
+    `*Detector Agreement:* ${report.agreement}\n` +
+    `*Word Count:* ${submission.wordCount} words\n\n` +
+    (pdfDownloadUrl ? `📄 *Download Official PDF Certificate:*\n${pdfDownloadUrl}\n\n` : '') +
+    `View on Desk: https://tmq-checker.vercel.app/report/${submission.id}`
+  );
+
+  const userPhone = user?.whatsappNumber ? user.whatsappNumber.replace(/\D/g, '') : '';
+  const waUrl = userPhone 
+    ? `https://wa.me/${userPhone}?text=${waText}`
+    : `https://wa.me/?text=${waText}`;
+
   return (
     <div className="space-y-6">
       {/* Top back action */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           to="/history"
           className="inline-flex items-center space-x-1 text-xs font-semibold text-moss hover:text-forest"
@@ -56,18 +77,31 @@ export const ReportView: React.FC = () => {
           <span>Back to Ledger</span>
         </Link>
 
-        {report.pdfUrl && (
+        <div className="flex items-center space-x-3">
           <a
-            href={`https://tmq-authenticity-api.onrender.com${report.pdfUrl.startsWith('/') ? '' : '/'}${report.pdfUrl}`}
-            download={`TMQ_Report_${submission.id}.pdf`}
+            href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-forest text-parchment rounded-lg text-xs font-bold shadow hover:bg-forest/90 transition font-serif"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-[#25D366] text-white rounded-lg text-xs font-bold shadow hover:bg-[#1EBE5D] transition font-sans"
+            title="Open report slip and PDF certificate in WhatsApp"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Download Forensic Certificate (PDF)</span>
+            <Phone className="w-3.5 h-3.5" />
+            <span>Send to WhatsApp</span>
           </a>
-        )}
+
+          {report.pdfUrl && (
+            <a
+              href={pdfDownloadUrl}
+              download={`TMQ_Report_${submission.id}.pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-1.5 px-4 py-2 bg-forest text-parchment rounded-lg text-xs font-bold shadow hover:bg-forest/90 transition font-serif"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download Certificate (PDF)</span>
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Manuscript Review Slip Container */}
