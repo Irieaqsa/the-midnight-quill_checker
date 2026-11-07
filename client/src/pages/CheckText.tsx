@@ -76,27 +76,37 @@ export const CheckText: React.FC = () => {
         try {
           const checkRes = await api.get(`/submissions/${submissionId}`);
           const sub = checkRes.data?.submission;
-          if (sub && sub.status === 'COMPLETE') {
+          if (sub && (sub.status === 'COMPLETE' || sub.status === 'FAILED')) {
             completed = true;
             clearInterval(pollInterval);
-            eventSource.close();
+            try { eventSource.close(); } catch (e) {}
             navigate(`/report/${submissionId}`);
           }
         } catch (e) {
           // ignore transient poll errors
         }
-      }, 1500);
+      }, 1200);
+
+      // Hard timeout fallback: redirect after 25s if backend finished or stuck
+      setTimeout(() => {
+        if (!completed) {
+          completed = true;
+          clearInterval(pollInterval);
+          try { eventSource.close(); } catch (e) {}
+          navigate(`/report/${submissionId}`);
+        }
+      }, 25000);
 
       eventSource.addEventListener('status', (e: any) => {
         const data = JSON.parse(e.data);
         setStatusState(data.status);
-        if (data.status === 'COMPLETE') {
+        if (data.status === 'COMPLETE' || data.status === 'FAILED') {
           completed = true;
           clearInterval(pollInterval);
-          eventSource.close();
+          try { eventSource.close(); } catch (e) {}
           setTimeout(() => {
             navigate(`/report/${submissionId}`);
-          }, 800);
+          }, 500);
         }
       });
 
@@ -248,7 +258,7 @@ export const CheckText: React.FC = () => {
             Your manuscript has fanned out across 5 independent linguistic neural networks. Building aggregate report.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {Object.entries(detectorStatus).map(([name, info]) => (
               <div key={name} className="bg-black/20 p-3 rounded-lg border border-sage/10 text-center">
                 <div className="text-xs font-bold text-sage">{name}</div>
