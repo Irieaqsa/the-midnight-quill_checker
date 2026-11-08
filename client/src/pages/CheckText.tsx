@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, AlertCircle, CheckCircle2, Clock, Upload, ShieldCheck, Mail, Sparkles } from 'lucide-react';
+import { StoryScroll } from '../components/StoryScroll';
+import { Send, AlertCircle, CheckCircle2, Clock, Upload, ShieldCheck, Mail, Sparkles, BookOpen } from 'lucide-react';
 
 export const CheckText: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const pasteCardRef = useRef<HTMLDivElement>(null);
+  const storyRef = useRef<HTMLDivElement>(null);
 
   const [text, setText] = useState('');
   const [genre, setGenre] = useState<'POEM' | 'MONOLOGUE' | 'ESSAY'>('POEM');
@@ -134,20 +137,63 @@ export const CheckText: React.FC = () => {
     );
   };
 
+  const scrollToDetector = () => {
+    pasteCardRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToStory = () => {
+    storyRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className="max-w-[720px] mx-auto space-y-8 animate-fadeIn">
-      {/* Hero Section per DESIGN.md */}
-      <div className="space-y-3">
+    <div className="space-y-16 animate-fadeIn">
+      {/* Hero Section per DESIGN.md Section 7 & 11 */}
+      <div className="max-w-[720px] mx-auto space-y-6 pt-4 text-center sm:text-left">
         <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-tmq-brand block">
           The Midnight Quill
         </span>
-        <h1 className="text-3xl sm:text-4xl lg:text-[40px] font-semibold text-tmq-text-strong tracking-[-0.015em] leading-[1.15]">
+        <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-tmq-text-strong tracking-[-0.02em] leading-[1.05]">
           Writing Authenticity Detector
         </h1>
-        <p className="text-[16px] text-tmq-text-muted leading-[1.55]">
+        <p className="text-[18px] text-tmq-text-muted leading-[1.55]">
           A calm, forensic review layer assessing 10 signal families, human counter-evidence, and 13 literary craft metrics.
         </p>
+
+        {/* Hero two buttons per Section 11: "Read why we built this" and "Skip to the detector" */}
+        <div className="flex flex-wrap items-center gap-3 pt-2 justify-center sm:justify-start">
+          <button
+            type="button"
+            onClick={scrollToStory}
+            className="btn-primary flex items-center space-x-2"
+          >
+            <BookOpen className="w-4 h-4 text-tmq-on-brand" />
+            <span>Read why we built this</span>
+          </button>
+          <button
+            type="button"
+            onClick={scrollToDetector}
+            className="btn-ghost flex items-center space-x-1.5 text-tmq-text-muted hover:text-tmq-text border border-tmq-border-strong rounded-btn px-4 py-2"
+          >
+            <span>Skip to the detector &darr;</span>
+          </button>
+        </div>
       </div>
+
+      {/* Full-width scroll story: Section 11 */}
+      <div ref={storyRef} className="w-full">
+        <StoryScroll onSkipToDetector={scrollToDetector} />
+      </div>
+
+      {/* Main Paste Card Area (Anchored at 720px width) */}
+      <div ref={pasteCardRef} className="max-w-[720px] mx-auto space-y-6 pt-6">
+        <div className="border-b border-tmq-border-subtle pb-4">
+          <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-tmq-text-soft block">
+            Manuscript Desk
+          </span>
+          <h2 className="text-[28px] font-semibold text-tmq-text-strong tracking-[-0.015em]">
+            Submit Text for Analysis
+          </h2>
+        </div>
 
       {error && (
         <div className="bg-tmq-surface-2 border border-tmq-danger/30 rounded-md p-4 text-[14px] text-tmq-danger flex items-center space-x-2.5">
@@ -314,6 +360,7 @@ export const CheckText: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
