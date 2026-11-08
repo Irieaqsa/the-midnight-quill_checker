@@ -1,0 +1,528 @@
+{
+ "version": "v3",
+ "note": "Scores are one scorer's calibrated judgement (Claude, with the owner). Re-rate by hand and overrule where you disagree. Contains private pieces; keep it private.",
+ "tiers": {
+  "very good": "80+",
+  "good": "65-79",
+  "average": "50-64",
+  "bad": "40-49",
+  "worst": "below 40"
+ },
+ "pieces": [
+  {
+   "id": "walls",
+   "title": "If Walls Could Speak (eulogy, prose-poem)",
+   "form": "prose / free",
+   "tier": "very good",
+   "final_score": 83.7,
+   "raw_points": 49.4,
+   "available_points": 59,
+   "percent_before_bias": 83.7,
+   "emotional_impact_input": 9,
+   "emotional_bias": 1.1,
+   "bias_adjustment": 0,
+   "metric_levels": {
+    "Meter": null,
+    "Rhyme": null,
+    "Syllabic": null,
+    "MusicalEmotionalFit": 3,
+    "IcebergDepth": 3.25,
+    "Subtext": 3,
+    "EmotionContainment": 3,
+    "Voice": 3.5,
+    "Specificity": 3.5,
+    "ClicheDensity": 3.25,
+    "DiscoveryArc": 3.5,
+    "Pivot": 3.75,
+    "AILikelihoodInverted": 4
+   },
+   "metric_points": {
+    "MusicalEmotionalFit": 4.5,
+    "IcebergDepth": 6.5,
+    "Subtext": 4.5,
+    "EmotionContainment": 4.5,
+    "Voice": 6.12,
+    "Specificity": 6.12,
+    "ClicheDensity": 4.06,
+    "DiscoveryArc": 4.38,
+    "Pivot": 4.69,
+    "AILikelihoodInverted": 4.0
+   },
+   "mechanical": {
+    "words": 433,
+    "told_emotion_per_100": 0.5,
+    "top_repeated_trigram": {
+     "phrase": "walls could speak",
+     "count": 4
+    },
+    "personal_moments": 8
+   },
+   "text": "If walls could speak\n\nI think they'd speak of your laughter first Not the loud kind, but your extremely high pitched laugh almost pricking our ears but never in an annoying way, it felt likr home, like something familiar and like something ours\n\nIf the walls could speak,\n\nOur cafe hoppings would remind us your dark and hillarious jokes, your obsession for pictures with food, how when our order would arrive our inner critiques would come out. Our gossip sessions, deep talks, crazy photo sessions, fighting for each other's food Oh dear\n\nThey would rememeber us for our carefree, 0 civic sense, balling out laughter that would make our stomach hurt and suddenly our\n\nworld would feel lighter\n\nOh and the club walls would have crazy stories\n\nThey'd remember us as the craziest and messiest people.\n\nThey'd remember us so under influence, dancing terribly qnr perfectly at the same time- holding each other for support because we were apparently tooo drunk to even stand straight. Shouting lyrics at each other's faces like our life dependent on it. 2/5\n\nThey'd remember you crying one moment and laughing the other like nothing ever happened. How you used to take care of us no matter how drunk you were yourself, somehow always in your senses.\n\nSuperpower much\n\nIf the classroom walls could speak,\n\nThey'd laugh first\n\nThey'd talk about how impossible it was for us to stay serious during the whole class. Subway surfer on tabs, airpods blasting music, movie marathons, games, gossips, standing in punishments together almost everything except paying attention\n\nAnd the quiet moments, those mattered the most.\n\nThe walks to home, telling each other how broke we were and the next moment food in our hands, giggling shamelessly throughout. Peeling food without being asked to, cooking for each other in times of illness, saving last bite, remembering preferences, tiny acts of devotion disguised as habits\n\nThat was your love language. You made people feel cared by your mundane acts that they almost went unnoticed\n\nAlmost.\n\nIf the walls could speak,\n\nThey wouldnt only talk about your death, they would also talk about your phrases, your accent, your patented words, stupid jokes, wierdass reactions. The way you cared for us got woven into our lives amd routines that parts of you still survives in us. And thats thr strangest thing 4/5\n\nEven if right now you are not with us, yet every one of us still speaks a little like you, loves a little like you, takes care of people a little like you\n\nAs if you refuse to leave us and we love it\n\nRip baby"
+  },
+  {
+   "id": "nothing",
+   "title": "Nothing's wrong (monologue)",
+   "form": "free verse",
+   "tier": "good",
+   "final_score": 76.8,
+   "raw_points": 45.3,
+   "available_points": 59,
+   "percent_before_bias": 76.8,
+   "emotional_impact_input": 7,
+   "emotional_bias": 0.4,
+   "bias_adjustment": 0,
+   "metric_levels": {
+    "Meter": null,
+    "Rhyme": null,
+    "Syllabic": null,
+    "MusicalEmotionalFit": 3.5,
+    "IcebergDepth": 3.5,
+    "Subtext": 3,
+    "EmotionContainment": 3.75,
+    "Voice": 3.25,
+    "Specificity": 1.14,
+    "ClicheDensity": 3,
+    "DiscoveryArc": 2.5,
+    "Pivot": 3.5,
+    "AILikelihoodInverted": 4
+   },
+   "metric_points": {
+    "MusicalEmotionalFit": 5.25,
+    "IcebergDepth": 7.0,
+    "Subtext": 4.5,
+    "EmotionContainment": 5.62,
+    "Voice": 5.69,
+    "Specificity": 1.99,
+    "ClicheDensity": 3.75,
+    "DiscoveryArc": 3.12,
+    "Pivot": 4.38,
+    "AILikelihoodInverted": 4.0
+   },
+   "mechanical": {
+    "words": 80,
+    "told_emotion_per_100": 1.2,
+    "top_repeated_trigram": {
+     "phrase": "still my chest",
+     "count": 2
+    },
+    "personal_moments": 0
+   },
+   "text": "Nothing's wrong,\nI don't know\nWhat's wrong\nWith me\nAt least…\nnothing I can see.\nAnd still\nmy chest feels heavy.\nNot pain.\nNot panic.\nJust… weight.\n\nI look for some reason.\nA moment maybe.\nMaybe a mistake.\nSomething to blame,\nFor my heart's flame.\n\nBut there's nothing.\nJust silence.\nNo, noise...\nNothing,\nAnd that's\nWhat scares me!\n\nbecause I can't find\nwhat's wrong…\nmaybe\nit's everything,\nOr maybe\nThere's nothing\nWrong! But still\nMy chest ache\nLike nothing normal."
+  },
+  {
+   "id": "diya",
+   "title": "What Is Love? (essay by Diya)",
+   "form": "prose",
+   "tier": "good",
+   "final_score": 66.5,
+   "raw_points": 39.2,
+   "available_points": 59,
+   "percent_before_bias": 66.5,
+   "emotional_impact_input": 6,
+   "emotional_bias": -0.2,
+   "bias_adjustment": 0,
+   "metric_levels": {
+    "Meter": null,
+    "Rhyme": null,
+    "Syllabic": null,
+    "MusicalEmotionalFit": 2.25,
+    "IcebergDepth": 2,
+    "Subtext": 2,
+    "EmotionContainment": 2.5,
+    "Voice": 3,
+    "Specificity": 3,
+    "ClicheDensity": 2.5,
+    "DiscoveryArc": 3,
+    "Pivot": 3,
+    "AILikelihoodInverted": 4
+   },
+   "metric_points": {
+    "MusicalEmotionalFit": 3.38,
+    "IcebergDepth": 4.0,
+    "Subtext": 3.0,
+    "EmotionContainment": 3.75,
+    "Voice": 5.25,
+    "Specificity": 5.25,
+    "ClicheDensity": 3.12,
+    "DiscoveryArc": 3.75,
+    "Pivot": 3.75,
+    "AILikelihoodInverted": 4.0
+   },
+   "mechanical": {
+    "words": 555,
+    "told_emotion_per_100": 4.3,
+    "top_repeated_trigram": {
+     "phrase": "to love is",
+     "count": 8
+    },
+    "personal_moments": 4
+   },
+   "text": "To love is to let go, to love is to hold on, to love is to cherish people despite their flaws . The definitions for love are one too many to count. Yet when I say I love this person, somehow most of these definitions seem like half fits. So I often find myself asking this question What really is love? Is it when my father feeds me with his own hands when I don't want to eat?  or my mother saving the last piece of cake for me when she absolutely loves it more than me? Or perhaps it is when a friend remembers me whenever they see a cup of coffee. Or is it when my dog jumps to greet me the moment I am home. Yet all these are actions that show love but they aren't quite a definition so again what is love?\n             As I sat with those definitions and actions and words I thought to myself and came up with my own conclusion. Now that perhaps maybe as flawed and incorrect as may be but here's my perspective on love quite unfiltered \n            Many people say I would die for the person I love but that is the first point I would disagree with. If I love someone then I would stay that means I would live for them so I could be by their side a bit longer to enjoy the warmth they radiate. To love someone is to cherish them despite their flaws. Absolutely but it is also to make them aware of their flaws and push them to be a better person. To love someone is to remember things they like,make food for them, going on walks with them. It is to spend time with them and make their lives easier along the way. To love is never just a word it is always to prove it through actions by putting them first. \n                  Now comes a tough debate , some say to love is to let go while others say to love is to hold on. Both of the definitions seem so contradictory yet both are right in their own perspectives So I thought about it and both of them seem incomplete. When I say to love someone is to let them go I mean I would let them go if it meant their happiness because forcing them to stay? That's not love that just means I am attached to them and I am not ready to let go of how they make me feel. So then To love is to hold on ? Well to love is to hold on even when things get tough. When there are 1000 reasons to leave finding that one reason to stay with them because staying with them makes it worth it. That I would say is love. \n                 So in the end you may ask me that Diya what is love ? and well to be honest I wouldn't have a definition ready for you. But I can tell you this much that love is felt by actions and it is a feeling so mixed filled with both joy and sorrow that perhaps it can't be defined and can only be felt regardless of similarities,differences,merits or flaws. It is something that has given people a purpose to live since the beginning of time"
+  },
+  {
+   "id": "gaza",
+   "title": "Why am I still alive? (war-survivor poem)",
+   "form": "free verse",
+   "tier": "average",
+   "final_score": 63.2,
+   "raw_points": 38.4,
+   "available_points": 59,
+   "percent_before_bias": 65.0,
+   "emotional_impact_input": 9,
+   "emotional_bias": 2.7,
+   "bias_adjustment": -1.9,
+   "metric_levels": {
+    "Meter": null,
+    "Rhyme": null,
+    "Syllabic": null,
+    "MusicalEmotionalFit": 2.5,
+    "IcebergDepth": 2.25,
+    "Subtext": 2.5,
+    "EmotionContainment": 2.25,
+    "Voice": 2.75,
+    "Specificity": 2.75,
+    "ClicheDensity": 2.5,
+    "DiscoveryArc": 2.5,
+    "Pivot": 2.5,
+    "AILikelihoodInverted": 4
+   },
+   "metric_points": {
+    "MusicalEmotionalFit": 3.75,
+    "IcebergDepth": 4.5,
+    "Subtext": 3.75,
+    "EmotionContainment": 3.38,
+    "Voice": 4.81,
+    "Specificity": 4.81,
+    "ClicheDensity": 3.12,
+    "DiscoveryArc": 3.12,
+    "Pivot": 3.12,
+    "AILikelihoodInverted": 4.0
+   },
+   "mechanical": {
+    "words": 273,
+    "told_emotion_per_100": 1.8,
+    "top_repeated_trigram": {
+     "phrase": "why am i",
+     "count": 2
+    },
+    "personal_moments": 4
+   },
+   "text": "Why am I still alive?\nI should have been dead like others.\nDoes my time is yet to come,\nOr maybe they want me to turn.\n\nWhat was the mistake of my sleeping brother?\nWas he holding guns or launching missile\nOr was he conspire against the race to genocide.\nMaybe because he was insect, they carry pesticide.\n\nWhy was my dad shot with breads in hand?\nWas bread mock the presence of mighty neighbour\nOr was my dad riding on tank with gun in hand.\nMaybe because he was holding memory of his motherland.\n\nWhy I had to find my mom beneath the rubble?\nWas she commanding an army to your land\nOr was my home build on your Holy soil.\nMaybe because letting her live was heavy toil.\n\nWhy did my sister was raped by cloaked man?\nWas her appearance threaten your greater kingdom\nOr was a toy to be raged upon by tying her dad.\nMaybe because breaking bones isn't enough so you rage to break souls.\n\nWhy did a 6 month old infant had to die?\nWas he mock, torture or plan to kill\nOr was he just cleansing of land you need.\nMaybe your blind dirty eyes can see what you bleed.\n\nWhy am I still alive?\nAm I left behind just to see.\nDoes my time is yet to come maybe,\nleft to suffer on memories of people gone.\n\nWhy did I have to see this Eid?\nAll the echoes run from autumn back to spring,\nI am scared and worried, can't think but fear.\nThoughts running with tears in back to see whom to lose this year."
+  },
+  {
+   "id": "ghost",
+   "title": "Ghost (confessional poem)",
+   "form": "free verse",
+   "tier": "average",
+   "final_score": 62.4,
+   "raw_points": 37.4,
+   "available_points": 59,
+   "percent_before_bias": 63.3,
+   "emotional_impact_input": 8,
+   "emotional_bias": 2.4,
+   "bias_adjustment": -0.9,
+   "metric_levels": {
+    "Meter": null,
+    "Rhyme": null,
+    "Syllabic": null,
+    "MusicalEmotionalFit": 2.5,
+    "IcebergDepth": 2,
+    "Subtext": 2.25,
+    "EmotionContainment": 1.75,
+    "Voice": 2.75,
+    "Specificity": 2.75,
+    "ClicheDensity": 2,
+    "DiscoveryArc": 2.75,
+    "Pivot": 3.25,
+    "AILikelihoodInverted": 4
+   },
+   "metric_points": {
+    "MusicalEmotionalFit": 3.75,
+    "IcebergDepth": 4.0,
+    "Subtext": 3.38,
+    "EmotionContainment": 2.62,
+    "Voice": 4.81,
+    "Specificity": 4.81,
+    "ClicheDensity": 2.5,
+    "DiscoveryArc": 3.44,
+    "Pivot": 4.06,
+    "AILikelihoodInverted": 4.0
+   },
+   "mechanical": {
+    "words": 253,
+    "told_emotion_per_100": 4.0,
+    "top_repeated_trigram": {
+     "phrase": "ghost who would",
+     "count": 2
+    },
+    "personal_moments": 4
+   },
+   "text": "When i was a kid i used to fear ghosts \nGhost who would come at night \nHide under my bed, \nBehind the curtains\nOr beneath every dark corner of my room.\n\nI surpassed adulthood,seen life for 21 years.\n\nI still fear ghost \nBut A different ghost,\n\nA Ghost who would also come at night\nIn disguise of realisation and guilt\nHide behind my eyes\nBehind the skin\nOr Beneath my chest.\n\nKid me had a mom to run to \nwhen fear befalls \nHad torch to chase away \nThe darkness had a warm lap \nTo sleep on while being trembled\n\nBut adult me?\n\nWhat about him?\nA lonely sculpture,with no heart\nWith a hollow chest filled with regrets\nWhere would he run to?\n\nHow would he chase away the ghost \nfrom his head? \nWho would he run to seek shelter \nfrom the dark clouds?\n\nI think there is a ghost residing \nbeneath my skull\nWaiting for the darkness to come\nSo that he can torment me \nfor all the deeds I did\nSo that he can rip my chest off\nPull my heart out\nPeel the skin\nTear every vein of it\nCrush it untill the flesh turns \ninto a stack of rot cell\n\nThe ghost finally won,\nI just died last night\nThe reckoning of all my deeds \nhave completed\n\nI was alloted hell again\nThe same hell I feard all my life\nAnd The Ghost won the bettle\nThe battle between pain, fear and life\nWon when life just gives up...."
+  },
+  {
+   "id": "unsent2",
+   "title": "Unsent love letter (v2, AABB)",
+   "form": "rhymed",
+   "tier": "average",
+   "final_score": 57.1,
+   "raw_points": 39.9,
+   "available_points": 70,
+   "percent_before_bias": 57.1,
+   "emotional_impact_input": 7,
+   "emotional_bias": 2.0,
+   "bias_adjustment": 0,
+   "metric_levels": {
+    "Meter": 1.5,
+    "Rhyme": 2.5,
+    "Syllabic": 1.5,
+    "MusicalEmotionalFit": 2.25,
+    "IcebergDepth": 2,
+    "Subtext": 2.25,
+    "EmotionContainment": 2,
+    "Voice": 3,
+    "Specificity": 1.75,
+    "ClicheDensity": 2,
+    "DiscoveryArc": 2.5,
+    "Pivot": 2.5,
+    "AILikelihoodInverted": 4
+   },
+   "metric_points": {
+    "Meter": 1.5,
+    "Rhyme": 2.5,
+    "Syllabic": 1.12,
+    "MusicalEmotionalFit": 3.38,
+    "IcebergDepth": 4.0,
+    "Subtext": 3.38,
+    "EmotionContainment": 3.0,
+    "Voice": 5.25,
+    "Specificity": 3.06,
+    "ClicheDensity": 2.5,
+    "DiscoveryArc": 3.12,
+    "Pivot": 3.12,
+    "AILikelihoodInverted": 4.0
+   },
+   "mechanical": {
+    "words": 384,
+    "told_emotion_per_100": 2.6,
+    "top_repeated_trigram": {
+     "phrase": "i love looking",
+     "count": 1
+    },
+    "personal_moments": 1
+   },
+   "text": "I love looking at beautiful thing,\nAnd you must imagine flower or spring.\nBut no darling beautiful is only your face,\nBut I as nobody always dare to take it's grace.\n\nOne day you might just be mine,\nThat day, the only time my life will shine.\nLet's not rush to deliver a proposal speech,\n(Cause)\nI know that you might be here just to teach.\n\nDo I have eyes which can see?\n(Cause)\nYour beauty must be paid, not free!\nNow I wonder what will me without you,\nMaybe life will be just sad without any clue.\n\nAtlast let's consider what if you choose him,\nThat would be nice because he is good and slim.\nIs he athe favourite of almighty God?\nOr am I entangled in fate's dark odd!\n\nHe stands in the darkness, waiting for his turn,\nTo warm up his hands on the fire which I burn.\nHe sits beside the embers I bled out to explode.\nAnd borrows our warmth just to claim he is your light.\n\nHe appears like a canvas that’s easy to love,\nWhile I’m just a mess you’re scared to speak of.\n(Maybe)\nHe seek for the moment I slip or might fall,\nTo rush in and offer to provide you it all.\n\nStill, a tiny bit hope keeps on pulling my chest,\nThat maybe someday you will prefer me as best.\nThat you’ll smile at scars and cry at mess, I hold.\nAnd maybe choose my warm chaos to all of his gold.\n\nI’m scripting this letter knowing I’ll never able to send,\nPerhaps to experience the heartbreak before it can end.\nI’d rather be cozy to bleed out on this quiet blank page,\nThan letting you see me falling down on your stage.\n\nOne day these pages may also turn yellow and old,\nTheir edges torn, their stories dry, crumbling cold.\nBut every faded line of history shall also prove \nThat the bravest letters are the ones that never move.\n\n(But still)\nIf he’s your final call, I’ll just smile and step back,\nAnd probably paint over all leftover invisible crack.\nI’ll weep that he provide you the world that you crave,\nWhile I stand as a lonely servant inside my own grave."
+  },
+  {
+   "id": "separation",
+   "title": "The Great Separation (ABABCC pastiche)",
+   "form": "rhymed",
+   "tier": "average",
+   "final_score": 55.7,
+   "raw_points": 39.0,
+   "available_points": 70,
+   "percent_before_bias": 55.7,
+   "emotional_impact_input": 6,
+   "emotional_bias": 1.1,
+   "bias_adjustment": 0,
+   "metric_levels": {
+    "Meter": 2,
+    "Rhyme": 3.25,
+    "Syllabic": 1.5,
+    "MusicalEmotionalFit": 2.5,
+    "IcebergDepth": 2,
+    "Subtext": 2.25,
+    "EmotionContainment": 2.5,
+    "Voice": 1.75,
+    "Specificity": 1.14,
+    "ClicheDensity": 2,
+    "DiscoveryArc": 3.25,
+    "Pivot": 2.5,
+    "AILikelihoodInverted": 3
+   },
+   "metric_points": {
+    "Meter": 2.0,
+    "Rhyme": 3.25,
+    "Syllabic": 1.12,
+    "MusicalEmotionalFit": 3.75,
+    "IcebergDepth": 4.0,
+    "Subtext": 3.38,
+    "EmotionContainment": 3.75,
+    "Voice": 3.06,
+    "Specificity": 1.99,
+    "ClicheDensity": 2.5,
+    "DiscoveryArc": 4.06,
+    "Pivot": 3.12,
+    "AILikelihoodInverted": 3.0
+   },
+   "mechanical": {
+    "words": 352,
+    "told_emotion_per_100": 2.6,
+    "top_repeated_trigram": {
+     "phrase": "we try to",
+     "count": 2
+    },
+    "personal_moments": 0
+   },
+   "text": "We past by the reverend walls where once we wear the gown,    No desire to wander at random through the lime-walk's shade;    Loud thunder music dies within the college town, Where eternal hours of youth and intellect were made.  The racing paddles are still, the festive halls grew cold,    And that cast thin drifts, before our hearts grew old. \nThen arrives the Great Separation,fierceful and stark, To turn our passing freedom into a focused toil; We then bend our captive knee to facts lying in dark,    And hold our red noses to the grindstone's soil.    Like a melancholy madness shaking all heavy heads,    We trade our gleaming dreams for dull and routine beds.   \nWe try to summon the remembrance of things past, But have no power left to climb upon that floor; Another name is revealed where our hopes were once cast,    And keyless shadow locks have barred the ancient door. We try to mask our weariness, pretending all is quite well, While slow and secret poison cast its quiet spell.\nIt starts as some ignored ache, a dull, sickly strain,    A light and passing migraine arrive in the morning dew;    A tiny separable spite that nests within our brain, And galls the soft buds of all the friends we ever knew.    We cover ourselves in weeds of work to ease the smart,  Ignoring to know the cold disease is creeping to the heart.\nThe silent illness evolve, a hard and hidden mass, An inward developing tumor mining deep within;  And feeds upon our souls while busy seasons pass, And record the ulcerous places of our darkest sin. No soap can cleanse this foul darkness, a systemic rot,    That consumes the sweetest memories we have forgot.   \nAnd at last, the cancer spreads, a human ending force, Some call it guilt, the final harvest of eternal shame;    We are twain forever, bound to this distant falling course, And cannot find the courage to breathe each other’s name.    The deep, hard and cold vase of chilling tears is now frozen dry,   And under this inky blots, our dead expectations shall lie."
+  },
+  {
+   "id": "kashi",
+   "title": "Love Letter to Kashi",
+   "form": "rhymed",
+   "tier": "bad",
+   "final_score": 42.9,
+   "raw_points": 30.0,
+   "available_points": 70,
+   "percent_before_bias": 42.9,
+   "emotional_impact_input": 6,
+   "emotional_bias": 1.6,
+   "bias_adjustment": 0,
+   "metric_levels": {
+    "Meter": 1,
+    "Rhyme": 2,
+    "Syllabic": 1,
+    "MusicalEmotionalFit": 2,
+    "IcebergDepth": 1.25,
+    "Subtext": 2,
+    "EmotionContainment": 1.5,
+    "Voice": 1.75,
+    "Specificity": 1.75,
+    "ClicheDensity": 1.25,
+    "DiscoveryArc": 2.25,
+    "Pivot": 2.4,
+    "AILikelihoodInverted": 2
+   },
+   "metric_points": {
+    "Meter": 1.0,
+    "Rhyme": 2.0,
+    "Syllabic": 0.75,
+    "MusicalEmotionalFit": 3.0,
+    "IcebergDepth": 2.5,
+    "Subtext": 3.0,
+    "EmotionContainment": 2.25,
+    "Voice": 3.06,
+    "Specificity": 3.06,
+    "ClicheDensity": 1.56,
+    "DiscoveryArc": 2.81,
+    "Pivot": 3.0,
+    "AILikelihoodInverted": 2.0
+   },
+   "mechanical": {
+    "words": 438,
+    "told_emotion_per_100": 7.3,
+    "top_repeated_trigram": {
+     "phrase": "i held your",
+     "count": 5
+    },
+    "personal_moments": 2
+   },
+   "text": "I espied the ghats as I held your hands in mine,\nWhen I touched you at Assi, faith began to shine,\nGanga stood serene, she did not flow, she just watched,\nHow my fingers cradled yours as they held thee,\nFrom Assi to Manikarnika's eternal sacred holy fire,\nEvery step I took with you as I held you higher.\nAt Dashashwamedh, the bright lamps for prayer began to rise,\nI folded my hands as I wrapped them around yours, so wise,\nWe leaned on each other's shoulders and witnessed the sacred Ganga Aarti divine,\nBoth conch and bells rang high into the peaceful night,\nYour soft palm in mine became my diya's light,\nWe floated a diya in Ganga's stream,\nI held your hand tightly and prayed for my dream.\nBenaras held us closer and never let these memories part,\nIts beautiful lanes were made just for hand-in-hand and heart-to-heart,\nMalaiyo, incense, chai, Banarasi saree and kulhad chai,\nWe lost our way as we held hand-in-hand all day,\nYou softly told me that we should not go and should just stay,\nI held you tighter and let Kashi make our forever way.\nBarefoot to Shree Kashi Vishwanath Dham, I held your hands tightly,\nThe gold-spire glowed, but you were my strength, my heart, my light,\nInnumerable devotees with folded hands prayed for silver and gold,\nI held your hand firmly because you were my last and forever gift,\nForehead on marble, you locked your fingers in mine,\nI prayed that Mahadev would let you be only mine in the next birth too.\nAll said Kashi freed us from birth and pain,\nBut as I held your hand, I wanted to be born again,\nAt Manikarnika where fire burned, flowers bloomed nearby,\nYou kissed my forehead and said you would always stay by my side,\nLife and death met there under the same clear sky,\nGanga cleansed every sin except love because it was so sacred,\nAnd there I learned that moksha was nothing but holding you tightly.\nSo, my love, I wanted to explore everything with you,\nBe my man, be my gali, be my ghat and be my prayer,\nBe my aarti, be my Kashi, be my love language and be my breath of air,\nWhen the last diya faded and bells became still,\nWhen the moon silently faded over Ganga's holy water,\nI still stood there and held your hand in mine,\nI forever wrote your name in Ganga every year,\nFor every birth we saw,\nMy only prayer was that you and your hand stayed forever in me."
+  },
+  {
+   "id": "soul",
+   "title": "Soul of Dead Ink",
+   "form": "rhymed",
+   "tier": "bad",
+   "final_score": 42.2,
+   "raw_points": 32.1,
+   "available_points": 70,
+   "percent_before_bias": 45.8,
+   "emotional_impact_input": 7,
+   "emotional_bias": 3.5,
+   "bias_adjustment": -3.6,
+   "metric_levels": {
+    "Meter": 1,
+    "Rhyme": 1.5,
+    "Syllabic": 1,
+    "MusicalEmotionalFit": 1.5,
+    "IcebergDepth": 1.5,
+    "Subtext": 2,
+    "EmotionContainment": 1.25,
+    "Voice": 2.75,
+    "Specificity": 1.0,
+    "ClicheDensity": 1.25,
+    "DiscoveryArc": 2.5,
+    "Pivot": 2.75,
+    "AILikelihoodInverted": 4
+   },
+   "metric_points": {
+    "Meter": 1.0,
+    "Rhyme": 1.5,
+    "Syllabic": 0.75,
+    "MusicalEmotionalFit": 2.25,
+    "IcebergDepth": 3.0,
+    "Subtext": 3.0,
+    "EmotionContainment": 1.88,
+    "Voice": 4.81,
+    "Specificity": 1.75,
+    "ClicheDensity": 1.56,
+    "DiscoveryArc": 3.12,
+    "Pivot": 3.44,
+    "AILikelihoodInverted": 4.0
+   },
+   "mechanical": {
+    "words": 586,
+    "told_emotion_per_100": 4.4,
+    "top_repeated_trigram": {
+     "phrase": "i am a",
+     "count": 2
+    },
+    "personal_moments": 0
+   },
+   "text": "Title:Soul of dead ink\n\nI am a mountain now without rock,\nInfact I'm the lost sheep of my own flock.\nLet me take you to a fine golden hour,\nAn hour feels year ago when I opt for an flower.\nA time until which all I felt like a imposter.\nThen the almighty sun arrives to make mah life a roller coaster.\n\n\"I know the feeling that it's just another poetry,\nBut believe me she change my life into part of history.\"\n\nI don't know, how to rhyme or sing,\nBut at that time I was in love, open to fling.\nAll I knew is that thy servent wasn't worthy of angels love.\nMy stonesaffectionated with thy pearls, desire to strike thy glove.\nThe black raven called turmoil is my name,\nOr maybe I'm just nobody with no fame.\n\n\"You must be thinking this poem has not structure.\nBut when I describe her my entire body and soul got puncture.\"\n\nThe days passed in seconds while I watch her pass by,\nThe drops of Olympus fell, I grasp the sign to chase her as I fly.\nShe felt like intimacy of my all beloved so far.\nThis timeless moment is definition of serenity not a scar.\nEcho of heart beat was not present, the doubt arrive in my heart.\nThe panic begins with just a thought of burden to fulfill desire of this art.\n\n\"But then this strike that why does this world stop revolving around me,\nThen I noticed that my soul has already departure that my body has paid the fee.\"\n\nSlowly the echoes of living fade away,\nAlas my dying soul still wanted to see her ray.\nAt that moment all I desire to touch her last time,\nBut sadly the body was past turn worthless like a dime.\nAn angel asked my weeping soul, didn't she left you before,\nI replied, Sun did brought draught to my land, but just look at her and adore.\n\n\"Angel smiled saying you are in heaven look at the beauty here.\nThe tears in my face replied her all about my Sun's bright flare.\"\n\nNow maybe the almighty has blessed me with heaven,\nAll I do is curse my fate as just wanted to spend a min or seven.\nI was once asked \"Did thy heart die to see her loved by another\"\nI replied, \"My friend I die because I saw her in all her beauty.\"\nHe continued, \"What devil's tongue is this?\"\nI looked beneath, \"I am like a eye and she is Sun, couldn't able to take it long.\"\n\n\"He replied you lost the track of rhyming....\nI replied because it's life not everything is poetic.\"\n\nThus my life ended as I couldn't take the beauty,\nMaybe I fullfill my role to love, which was my duty.\nI guess that's why the almighty have send me here to rest.\nBut you know (readers) it's not fair as she is all I have in my chest.\nAll I can pray for her life and happiness....\nAnd Hope so her good life will reduce my emptiness....\n\n\"Sorry to disappoint but it's not a poetry\nAnd in my life sad that I didn't win the lottery\"\n\nAnd if not for her existence then,\n\nI am a mountain just without rock.\nYou can say I'm an ocean without water.\nMaybe desert without any sand.\nOr perhaps forrest without a single tree.\nA sky without freedom and Hope.\nMaybe she existing with him is my sisypus's rock."
+  },
+  {
+   "id": "jantar",
+   "title": "Jantar Mantar protest poem (\"I wish I didn't belong\")",
+   "form": "rhymed",
+   "tier": "worst",
+   "final_score": 36.8,
+   "raw_points": 29.2,
+   "available_points": 70,
+   "percent_before_bias": 41.8,
+   "emotional_impact_input": 8,
+   "emotional_bias": 4.6,
+   "bias_adjustment": -5,
+   "metric_levels": {
+    "Meter": 1.25,
+    "Rhyme": 1.5,
+    "Syllabic": 1.5,
+    "MusicalEmotionalFit": 1.75,
+    "IcebergDepth": 1.25,
+    "Subtext": 1.5,
+    "EmotionContainment": 1.5,
+    "Voice": 2,
+    "Specificity": 1.14,
+    "ClicheDensity": 1.5,
+    "DiscoveryArc": 1.5,
+    "Pivot": 2,
+    "AILikelihoodInverted": 4
+   },
+   "metric_points": {
+    "Meter": 1.25,
+    "Rhyme": 1.5,
+    "Syllabic": 1.12,
+    "MusicalEmotionalFit": 2.62,
+    "IcebergDepth": 2.5,
+    "Subtext": 2.25,
+    "EmotionContainment": 2.25,
+    "Voice": 3.5,
+    "Specificity": 1.99,
+    "ClicheDensity": 1.88,
+    "DiscoveryArc": 1.88,
+    "Pivot": 2.5,
+    "AILikelihoodInverted": 4.0
+   },
+   "mechanical": {
+    "words": 214,
+    "told_emotion_per_100": 2.3,
+    "top_repeated_trigram": {
+     "phrase": "i wish i",
+     "count": 6
+    },
+    "personal_moments": 0
+   },
+   "text": "the poem below regarding jantar mantar students protest  \n\n\n  I wish I didn't belong to this age,\nWhere to seek knowledge, \nOne has to pass through Humans rage.\n\nI just wish I didn't belong among this race\nWhen marching for rights,\nWill be necessary for educational pace.\n\nI wish I'd suffer from stroke,\nBetter than to see students bones\nBeing toyed and rights being a joke.\n\nI wish I wouldn't be part of this mankind,\nWhere marching women being harrassed \nBy protector who are totally blind.\n\nI wish I could just shut off my eyes,\nWhere students seeking for knowledge \nWill be treated as vicious spies.\n\nI wish I never have an open heart,\nThus the evil nature of all ruling god\nCould fool me to think him as smart.\n\nI wish I never be behind the distance bar,\nWhere pursuit of better future,\nWill give you token of heavy scar.\n\nI wish We never be on side of losing,\nWhere to exercise your right,\nWill make you regret of your choosing.\n\nI wish we could change yesterday,\nWhere they act as god\nAnd played with us like we are of clay.\n\nI wish I could speak of better tomorrow,\nBut the act within nation's vicinity \nIs only bringing tears and heart full of sorrow."
+  }
+ ]
+}
