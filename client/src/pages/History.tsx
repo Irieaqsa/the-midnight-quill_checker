@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Submission } from '../types';
-import { Search, Eye, Download, MessageCircle, FileText, ChevronRight } from 'lucide-react';
+import { Search, Eye, Download, MessageCircle, RotateCcw, Loader2 } from 'lucide-react';
 
 export const History: React.FC = () => {
+  const navigate = useNavigate();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [verdict, setVerdict] = useState('');
+  const [reDetectingId, setReDetectingId] = useState<string | null>(null);
 
   const fetchHistory = async () => {
     try {
@@ -33,6 +35,20 @@ export const History: React.FC = () => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchHistory();
+  };
+
+  const handleReDetect = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      setReDetectingId(id);
+      await api.post(`/submissions/${id}/re-detect`);
+      navigate(`/report/${id}`);
+    } catch (err: any) {
+      console.error('Re-detection error:', err);
+      alert(err.response?.data?.error || 'Failed to trigger re-detection');
+      setReDetectingId(null);
+    }
   };
 
   return (
@@ -129,6 +145,21 @@ export const History: React.FC = () => {
                 </div>
 
                 <div className="flex items-center space-x-2 flex-shrink-0 self-end sm:self-center">
+                  <button
+                    type="button"
+                    onClick={(e) => handleReDetect(item.id, e)}
+                    disabled={reDetectingId === item.id}
+                    className="btn-secondary text-[12px] px-2.5 py-1.5 flex items-center space-x-1 text-tmq-text-muted hover:text-tmq-brand"
+                    title="Re-run Multi-Detector and TMQ Special on this manuscript"
+                  >
+                    {reDetectingId === item.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-tmq-brand" />
+                    ) : (
+                      <RotateCcw className="w-3.5 h-3.5 text-tmq-brand" />
+                    )}
+                    <span className="hidden sm:inline">Re-detect</span>
+                  </button>
+
                   <Link
                     to={`/report/${item.id}`}
                     className="btn-secondary text-[12px] px-3 py-1.5 flex items-center space-x-1.5"

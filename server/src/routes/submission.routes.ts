@@ -170,6 +170,64 @@ router.get('/:id', authenticate, async (req: AuthenticatedRequest, res: Response
   }
 });
 
+// Re-detect previously submitted manuscript
+router.post('/:id/re-detect', authenticate, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const id = req.params.id as string;
+    const submission = await prisma.submission.findFirst({
+      where: {
+        id,
+        ...(req.user!.role !== 'ADMIN' ? { userId: req.user!.userId } : {}),
+      },
+      include: { user: true },
+    });
+
+    if (!submission) {
+      res.status(404).json({ error: 'Submission not found or unauthorized' });
+      return;
+    }
+
+    // Clean up previous provider results & report so it can be cleanly re-evaluated
+    await prisma.$transaction([
+      prisma.providerResult.deleteMany({ where: { submissionId: id } }),
+      prisma.report.deleteMany({ where: { submissionId: id } }),
+      prisma.submission.update({
+        where: { id },
+        data: {
+          status: 'QUEUED',
+          completedAt: null,
+        },
+      }),
+    ]);
+
+    // Launch background detection pipeline again
+    QueueService.processSubmissionAsync(submission.id);
+
+    // Fetch active providers
+    const enabledProviders = await prisma.provider.findMany({
+      where: { enabled: true },
+      select: { name: true, weight: true },
+    });
+
+    const activeProviderNames = enabledProviders.length > 0
+      ? enabledProviders.map(p => p.name)
+      : ['TMQ_SPECIAL', 'SAPLING'];
+
+    if (!activeProviderNames.includes('TMQ_SPECIAL')) {
+      activeProviderNames.unshift('TMQ_SPECIAL');
+    }
+
+    res.status(202).json({
+      message: 'Re-detection pipeline initiated.',
+      submissionId: submission.id,
+      status: 'QUEUED',
+      activeProviders: activeProviderNames,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // SSE Live Status Events
 router.get('/:id/events', authenticate, (req: Request, res: Response): void => {
   const submissionId = req.params.id;

@@ -292,6 +292,41 @@ router.patch('/providers/:id', async (req: AuthenticatedRequest, res: Response):
   }
 });
 
+// Clear overall history (Admin only)
+router.delete('/submissions/clear-all', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const count = await prisma.submission.count();
+
+    // Cascades remove provider_results, reports, and deliveries
+    await prisma.$transaction([
+      prisma.delivery.deleteMany({}),
+      prisma.report.deleteMany({}),
+      prisma.providerResult.deleteMany({}),
+      prisma.submission.deleteMany({}),
+    ]);
+
+    // Record audit log
+    if (req.user) {
+      await prisma.auditLog.create({
+        data: {
+          adminId: req.user.id,
+          action: 'CLEAR_OVERALL_SUBMISSION_HISTORY',
+          targetType: 'SYSTEM',
+          targetId: `Purged ${count} submissions`,
+          ip: req.ip || '127.0.0.1',
+        },
+      });
+    }
+
+    res.json({
+      message: `Successfully cleared all ${count} submission records from ledger history.`,
+      purgedCount: count,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Audit Log Viewer
 router.get('/audit', async (req: Request, res: Response): Promise<void> => {
   try {

@@ -11,7 +11,9 @@ import {
   MessageCircle,
   ShieldCheck,
   CheckCircle2,
-  Info
+  Info,
+  RotateCcw,
+  Loader2
 } from 'lucide-react';
 
 export const ReportView: React.FC = () => {
@@ -20,20 +22,38 @@ export const ReportView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedMetrics, setExpandedMetrics] = useState<Record<string, boolean>>({});
+  const [reDetecting, setReDetecting] = useState(false);
+
+  const fetchReport = async () => {
+    try {
+      const res = await api.get(`/submissions/${id}`);
+      setSubmission(res.data.submission);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to load report slip');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchReport = async () => {
-      try {
-        const res = await api.get(`/submissions/${id}`);
-        setSubmission(res.data.submission);
-      } catch (err: any) {
-        setError(err.response?.data?.error || 'Failed to load report slip');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchReport();
   }, [id]);
+
+  const handleReDetect = async () => {
+    try {
+      setReDetecting(true);
+      await api.post(`/submissions/${id}/re-detect`);
+      // Short delay then refresh
+      setTimeout(() => {
+        fetchReport();
+        setReDetecting(false);
+      }, 1500);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.error || 'Failed to re-detect submission');
+      setReDetecting(false);
+    }
+  };
 
   const toggleMetric = (name: string) => {
     setExpandedMetrics(prev => ({ ...prev, [name]: !prev[name] }));
@@ -120,6 +140,21 @@ export const ReportView: React.FC = () => {
         </Link>
 
         <div className="flex items-center space-x-2.5">
+          <button
+            type="button"
+            onClick={handleReDetect}
+            disabled={reDetecting}
+            className="btn-secondary text-[13px] px-3 py-1.5 flex items-center space-x-1.5 text-tmq-brand hover:bg-tmq-surface-3"
+            title="Re-run detector engines on this text"
+          >
+            {reDetecting ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <RotateCcw className="w-3.5 h-3.5" />
+            )}
+            <span>Re-detect</span>
+          </button>
+
           <a
             href={waLink}
             target="_blank"
