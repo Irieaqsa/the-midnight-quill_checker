@@ -1,6 +1,6 @@
 {
  "version": "v3",
- "note": "Scores are one scorer's calibrated judgement (Claude, with the owner). Re-rate by hand and overrule where you disagree. Contains private pieces; keep it private.",
+ "note": "Scores are one scorer's calibrated judgement (Claude, with the owner). Re-rate by hand and overrule where you disagree. Contains private pieces; keep it private. HOLD-OUT RULE: when testing the scorer, never include the piece being tested in the prompt's examples (leave-one-out).",
  "tiers": {
   "very good": "80+",
   "good": "65-79",
@@ -523,6 +523,66 @@
     "personal_moments": 0
    },
    "text": "the poem below regarding jantar mantar students protest  \n\n\n  I wish I didn't belong to this age,\nWhere to seek knowledge, \nOne has to pass through Humans rage.\n\nI just wish I didn't belong among this race\nWhen marching for rights,\nWill be necessary for educational pace.\n\nI wish I'd suffer from stroke,\nBetter than to see students bones\nBeing toyed and rights being a joke.\n\nI wish I wouldn't be part of this mankind,\nWhere marching women being harrassed \nBy protector who are totally blind.\n\nI wish I could just shut off my eyes,\nWhere students seeking for knowledge \nWill be treated as vicious spies.\n\nI wish I never have an open heart,\nThus the evil nature of all ruling god\nCould fool me to think him as smart.\n\nI wish I never be behind the distance bar,\nWhere pursuit of better future,\nWill give you token of heavy scar.\n\nI wish We never be on side of losing,\nWhere to exercise your right,\nWill make you regret of your choosing.\n\nI wish we could change yesterday,\nWhere they act as god\nAnd played with us like we are of clay.\n\nI wish I could speak of better tomorrow,\nBut the act within nation's vicinity \nIs only bringing tears and heart full of sorrow."
+  },
+  {
+   "id": "affiance",
+   "title": "Affiance could be this tough capture (thesaurus-style love poem)",
+   "form": "rhymed (end rhyme in all 3 stanzas, so Meter/Rhyme/Syllabic apply)",
+   "tier": "worst",
+   "floor_anchor": true,
+   "expected_range": [
+    15,
+    30
+   ],
+   "final_score": 22.0,
+   "raw_points": 18.9,
+   "available_points": 70,
+   "percent_before_bias": 27.0,
+   "emotional_impact_input": 6,
+   "emotional_bias": 4.0,
+   "bias_adjustment": -5,
+   "metric_levels": {
+    "Meter": 0.75,
+    "Rhyme": 2,
+    "Syllabic": 0.75,
+    "MusicalEmotionalFit": 1,
+    "IcebergDepth": 0.75,
+    "Subtext": 0.75,
+    "EmotionContainment": 0.5,
+    "Voice": 1.5,
+    "Specificity": 1.14,
+    "ClicheDensity": 1.25,
+    "DiscoveryArc": 0.75,
+    "Pivot": 0.5,
+    "AILikelihoodInverted": 3
+   },
+   "metric_points": {
+    "Meter": 0.75,
+    "Rhyme": 2.0,
+    "Syllabic": 0.56,
+    "MusicalEmotionalFit": 1.5,
+    "IcebergDepth": 1.5,
+    "Subtext": 1.12,
+    "EmotionContainment": 0.75,
+    "Voice": 2.62,
+    "Specificity": 1.99,
+    "ClicheDensity": 1.56,
+    "DiscoveryArc": 0.94,
+    "Pivot": 0.62,
+    "AILikelihoodInverted": 3.0
+   },
+   "mechanical": {
+    "words": 169,
+    "told_emotion_per_100": 11.8,
+    "top_repeated_trigram": {
+     "phrase": "none repeated",
+     "count": 1
+    },
+    "personal_moments": 0,
+    "unparsable_lines_estimate": 6,
+    "note": "Rare words misused (Spoonerism, abel, abase of, dilection), collapsed syntax, mixed archaic and modern register"
+   },
+   "text": "Affiance could be this tough capture,\nNever fond of being wane instead of Rapture,\nMy heart beholds you my lady, My Cupid, your arrow is celestial.\nGrains of Languishment. Protest of Pining,\nI do accept even thy bestial,\nThe wavy bright by your mooning, Or is it just Nature alive by our Spooning!\n\nKingsman army Enamoured will still be abase of one Gaze.\nPrometheus act was Dotage, The orb to sight Olympus in our Blaze.\nVows taken as spellbound, Thee deed light me up in divine Candescence.\nAiry breathing abel, can't turn away thy Spoonerism or aroma/ fragrance.\nSurrendering Blood flow, running through air, Until We be infatuation.\n\nEvery petal above thy pearl recite own word of Druery.\nAll thy fabric holding our part, all thy inches are art of jwellery.\nClothing might be of infirmity, But do crave, howl like a hound.\nThis globe offers void if thee don't fancy be besotted, adore and bound.\nCrown of Thorns, Cross of Christ are great dilection in Your moonfull Love."
   }
  ]
 }

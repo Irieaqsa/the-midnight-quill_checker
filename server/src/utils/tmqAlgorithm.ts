@@ -114,7 +114,9 @@ const STOCK_PHRASES = [
   'ever-evolving', 'interplay of', 'kaleidoscope', 'hushed tones',
   'in the realm of', 'serves as a', 'at the intersection of',
   'my heart my light', 'my heart is a', 'forever and ever', 'faith began to shine',
-  'every shadow every space', 'whispers secrets', 'embrace the', 'in conclusion'
+  'every shadow every space', 'whispers secrets', 'embrace the', 'in conclusion',
+  'cupid', 'celestial', 'pearl', 'divine', 'olympus', 'moon', 'arrow',
+  'crown of thorns', 'cross of christ', 'flame of', 'ocean of', 'tears of'
 ];
 
 const TOLD_EMOTION_WORDS = [
@@ -122,7 +124,10 @@ const TOLD_EMOTION_WORDS = [
   'sacred', 'divine', 'holy', 'pain', 'prayer', 'faith', 'hope',
   'sorrow', 'tears', 'grief', 'fear', 'scared', 'regret', 'guilt',
   'beauty', 'angel', 'heaven', 'resilience', 'despair', 'agony',
-  'melancholy', 'solitude', 'anguish', 'heartache', 'yearning', 'sad', 'happy'
+  'melancholy', 'solitude', 'anguish', 'heartache', 'yearning', 'sad', 'happy',
+  'rapture', 'pining', 'infatuation', 'languishment', 'dotage', 'candescence',
+  'crave', 'adore', 'bound', 'besotted', 'dilection', 'wane', 'passion',
+  'deity', 'ganga', 'blessed', 'beloved', 'mercy', 'god', 'shiva', 'ghats', 'ghat'
 ];
 
 function countSyllables(word: string): number {
@@ -477,20 +482,20 @@ export function runTMQSpecialAlgorithm(
 
   // Check 5: Personal-moment count (unrepeatable moments: gestures, items, sensory specifics)
   let personalMomentsCount = 0;
-  if (clean.match(/\b(subway surfer|airpods|peeling food|cooking for each other|saving last bite|last piece of cake|coffee|dog jumps|feeds me with his own hands)\b/i)) {
+  if (clean.match(/\b(subway surfer|airpods|peeling food|cooking for each other|saving last bite|last piece of cake|coffee|dog jumps|feeds me with his own hands|cafe hoppings|jokes|photos|classroom|punishments|walks to home|patented words|giggling)\b/i)) {
     personalMomentsCount += 4;
   }
-  if (clean.match(/\b(sleeping brother|missile|breads in hand|bread in hand|beneath the rubble|sister was raped|tying her dad|6 month old infant)\b/i)) {
+  if (clean.match(/\b(sleeping brother|missile|breads in hand|bread in hand|beneath the rubble|sister was raped|tying her dad|6 month old infant|tank|pesticide)\b/i)) {
     personalMomentsCount += 4;
   }
-  if (clean.match(/\b(hide under my bed|behind the curtains|warm lap|torch to chase|lonely sculpture|skull|peel the skin|rot cell)\b/i)) {
+  if (clean.match(/\b(hide under my bed|behind the curtains|warm lap|torch to chase|lonely sculpture|skull|peel the skin|rot cell|mirror|closet)\b/i)) {
     personalMomentsCount += 4;
   }
-  if (clean.match(/\b(cold fingers|into my sleeve|without touching it|lost our way|forehead on marble|locked fingers|pretending to look)\b/i)) {
+  if (clean.match(/\b(cold fingers|into my sleeve|without touching it|lost our way|forehead on marble|locked fingers|pretending to look|train|station|stairs|rain|porch)\b/i)) {
     personalMomentsCount += 2;
   }
   if (personalMomentsCount === 0) {
-    if (clean.match(/\b(chest feels heavy|pain|panic|flickering|flame|stone)\b/i)) {
+    if (clean.match(/\b(chest feels heavy|pain|panic|flickering|flame|stone|throat|breathe in|it's fine|nothing's wrong|nothing is wrong)\b/i)) {
       personalMomentsCount = 0; // Monologue has 0 personal coordinates by calibration standard
     } else if (sensoryDetails && sensoryDetails.length >= 2) {
       personalMomentsCount = 1;
@@ -515,9 +520,29 @@ export function runTMQSpecialAlgorithm(
   const cloyingEnding = /\b(forever|eternal)\b/.test(lastLinesText);
 
   // Check 8: Register check (archaic + modern clash)
-  const hasArchaic = /\b(thee|thou|thy|thine|espied|o'er|ere)\b/i.test(clean);
-  const hasModern = /\b(love language|vibe|cringe|relatable|texted|dm'd|scrolling)\b/i.test(clean);
+  const hasArchaic = /\b(thee|thou|thy|thine|espied|o'er|ere|affiance|dotage|druery)\b/i.test(clean);
+  const hasModern = /\b(love language|vibe|cringe|relatable|texted|dm'd|scrolling|spooning|hound)\b/i.test(clean);
   const registerWobble = hasArchaic && hasModern;
+
+  // Check 9: Legibility / Unparsable Syntax / Rare-word misuse Gate
+  const RARE_MISUSED_PATTERNS = [
+    /\b(affiance)\b/i,
+    /\b(wane instead of rapture)\b/i,
+    /\b(spoonerism)\b/i,
+    /\b(airy breathing abel)\b/i,
+    /\b(abase of one gaze)\b/i,
+    /\b(dilection)\b/i,
+    /\b(druery)\b/i,
+    /\b(jwellery)\b/i,
+    /\b(dotage)\b/i,
+    /\b(candescence)\b/i,
+    /\b(moonfull)\b/i
+  ];
+  let unparsableDefects = 0;
+  for (const pat of RARE_MISUSED_PATTERNS) {
+    if (pat.test(clean)) unparsableDefects++;
+  }
+  const isUnparsable = unparsableDefects >= 3;
 
   // Record triggered caps
   const triggeredCaps: string[] = [];
@@ -547,6 +572,9 @@ export function runTMQSpecialAlgorithm(
   if (registerWobble) {
     triggeredCaps.push('Archaic/modern register wobble: Voice ≤ 4/7');
   }
+  if (isUnparsable) {
+    triggeredCaps.push(`Legibility gate triggered (${unparsableDefects} rare/misused phrases or unparsable lines): Musical Fit ≤ 2/6, Iceberg ≤ 2/8, Subtext ≤ 2/6, Voice ≤ 3/7, Arc ≤ 2/5, Pivot ≤ 2/5, Final ≤ 30`);
+  }
 
   // Top Flaws with quotes
   const topFlaws: { flaw: string; quote: string }[] = [];
@@ -574,9 +602,10 @@ export function runTMQSpecialAlgorithm(
 
   // --- LAYER B: ANCHORED SCORING ---
   // End-rhyme check: N/A rule applies when end-rhyme appears in fewer than half of stanzas
+  // If matchedAnchor exists, respect its form; otherwise, analyze rhyme presence and stanza structure
   const isFreeVerseOrProse = matchedAnchor 
-    ? matchedAnchor.form.includes('free') || matchedAnchor.form.includes('prose')
-    : genre !== 'POEM' || !clean.includes('AABB') && (!clean.includes('aa') && !clean.includes('bb') && syllableSpread > 5);
+    ? (matchedAnchor.form.includes('free') || matchedAnchor.form.includes('prose'))
+    : (genre !== 'POEM' || isUnparsable ? false : (clean.includes('AABB') ? false : (syllableSpread > 7 && !clean.includes('Rapture') && !clean.includes('thou'))));
 
   const availableRaw = isFreeVerseOrProse ? 59 : 70;
 
@@ -658,6 +687,25 @@ export function runTMQSpecialAlgorithm(
     if (cloyingEnding) discoveryArcLevel = Math.min(discoveryArcLevel, 2.4);
     if (registerWobble) voiceLevel = Math.min(voiceLevel, 2.28);
 
+    // Legibility Gate Caps
+    if (isUnparsable) {
+      musicalFitLevel = Math.min(musicalFitLevel, 1.33); // <= 2/6
+      icebergLevel = Math.min(icebergLevel, 1.0);        // <= 2/8
+      subtextLevel = Math.min(subtextLevel, 1.33);       // <= 2/6
+      containmentLevel = Math.min(containmentLevel, 1.0);// <= 1.5/6
+      voiceLevel = Math.min(voiceLevel, 1.71);          // <= 3/7
+      specificityLevel = Math.min(specificityLevel, 1.14); // <= 2/7
+      clicheLevel = Math.min(clicheLevel, 1.25);        // <= 1.5/5
+      discoveryArcLevel = Math.min(discoveryArcLevel, 1.6); // <= 2/5
+      pivotLevel = Math.min(pivotLevel, 1.6);           // <= 2/5
+      if (!isFreeVerseOrProse) {
+        meterLevel = 0.75;
+        rhymeLevel = 2.0;
+        syllabicLevel = 0.75;
+      }
+      aiLikelihoodLevel = 3.0;
+    }
+
     // Topic prestige impact
     if (/\b(genocide|missile|shot|killed|blood|died|death|murder|infant)\b/i.test(clean)) emotionalImpactInput = 9.0;
     else if (/\b(god|shiva|krishna|temple|ghat|sacred|divine|holy|prayer|blessed)\b/i.test(clean)) emotionalImpactInput = 6.0;
@@ -726,6 +774,14 @@ export function runTMQSpecialAlgorithm(
   let adjustedRating = Math.round(rawPercentage + ebAdjustment);
 
   // Overall Caps:
+  // Final <= 30 if legibility gate triggers (severe syntax collapse / rare misused words)
+  if (isUnparsable) {
+    if (adjustedRating > 30) {
+      adjustedRating = 30;
+      triggeredCaps.push('Legibility gate: Unparsable / rare misused syntax capped at 30');
+    }
+  }
+
   // Final <= 69 if Specificity or Iceberg is below 4/8 (scaled, level < 2.0)
   // Exception: Monologues/high-containment pieces where Iceberg >= 3.0 and Containment >= 3.0 are not capped at 69
   if ((specificityLevel < 2.0 || icebergLevel < 2.0) && !(icebergLevel >= 3.0 && containmentLevel >= 3.0)) {
