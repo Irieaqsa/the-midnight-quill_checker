@@ -9,6 +9,7 @@ export const AllActivity: React.FC = () => {
   const [search, setSearch] = useState('');
   const [isClearing, setIsClearing] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [deleteFilter, setDeleteFilter] = useState<'all' | 'before_7_weeks' | 'before_30_days' | 'last_7_days' | 'last_24_hours'>('before_7_weeks');
   const [reDetectingId, setReDetectingId] = useState<string | null>(null);
 
   const fetchData = async () => {
@@ -27,15 +28,17 @@ export const AllActivity: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleClearAllHistory = async () => {
+  const handleClearHistory = async () => {
     try {
       setIsClearing(true);
-      await api.delete('/admin/submissions/clear-all');
+      const params = deleteFilter === 'all' ? {} : { filter: deleteFilter };
+      const res = await api.delete('/admin/submissions/clear-all', { params });
       setShowConfirmModal(false);
+      alert(res.data?.message || 'History cleared successfully.');
       await fetchData();
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.error || 'Failed to clear overall history.');
+      alert(err.response?.data?.error || 'Failed to clear history.');
     } finally {
       setIsClearing(false);
     }
@@ -86,17 +89,40 @@ export const AllActivity: React.FC = () => {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* Confirmation & Filter Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div className="bg-tmq-surface rounded-card max-w-md w-full p-6 space-y-4 shadow-xl border border-red-500/40">
             <div className="flex items-center space-x-3 text-red-400">
               <AlertTriangle className="w-6 h-6 flex-shrink-0" />
-              <h3 className="text-base font-bold text-tmq-text-strong">Clear Overall Submission History?</h3>
+              <h3 className="text-base font-bold text-tmq-text-strong">Purge Submission Ledger Records</h3>
             </div>
+            
             <p className="text-xs text-tmq-text-muted leading-relaxed">
-              This action is <strong className="text-red-400">irreversible</strong>. It will permanently purge all manuscript submissions, evaluation reports, and multi-detector records across all authors.
+              Select which records to permanently purge from the platform database and audit trail:
             </p>
+
+            <div className="space-y-2 pt-1">
+              <label className="block text-xs font-semibold text-tmq-text uppercase tracking-wider">
+                Filter Option:
+              </label>
+              <select
+                value={deleteFilter}
+                onChange={(e) => setDeleteFilter(e.target.value as any)}
+                className="w-full px-3 py-2 border border-tmq-border rounded-btn text-xs bg-tmq-surface-2 text-tmq-text-strong focus:outline-none focus:border-red-500"
+              >
+                <option value="before_7_weeks">Older than 7 weeks (Before 49 days)</option>
+                <option value="before_30_days">Older than 30 days</option>
+                <option value="last_7_days">From the last 7 days only</option>
+                <option value="last_24_hours">From the last 24 hours only</option>
+                <option value="all">Entire platform history (All submissions)</option>
+              </select>
+            </div>
+
+            <div className="p-3 bg-red-950/20 border border-red-500/20 rounded-md text-[11px] text-red-300">
+              ⚠️ This deletion is <strong>permanent</strong> and will remove manuscripts, multi-detector forensic evaluations, and delivery certificates.
+            </div>
+
             <div className="flex justify-end space-x-2 pt-2">
               <button
                 type="button"
@@ -108,7 +134,7 @@ export const AllActivity: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={handleClearAllHistory}
+                onClick={handleClearHistory}
                 disabled={isClearing}
                 className="px-4 py-2 text-xs font-semibold bg-red-600 text-white rounded-btn hover:bg-red-700 flex items-center space-x-1.5"
               >

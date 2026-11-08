@@ -292,34 +292,77 @@ router.patch('/providers/:id', async (req: AuthenticatedRequest, res: Response):
   }
 });
 
-// Clear overall history (Admin only)
+// Clear overall history with filter option (Admin only)
 router.delete('/submissions/clear-all', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const count = await prisma.submission.count();
+    const { filter, beforeDate, afterDate } = req.query;
 
-    // Cascades remove provider_results, reports, and deliveries
-    await prisma.$transaction([
-      prisma.delivery.deleteMany({}),
-      prisma.report.deleteMany({}),
-      prisma.providerResult.deleteMany({}),
-      prisma.submission.deleteMany({}),
-    ]);
+    const where: any = {};
+    const now = new Date();
+
+    if (filter === 'before_7_weeks') {
+      const targetDate = new Date(now.getTime() - 7 * 7 * 24 * 60 * 60 * 1000);
+      where.createdAt = { lt: targetDate };
+    } else if (filter === 'before_30_days') {
+      const targetDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      where.createdAt = { lt: targetDate };
+    } else if (filter === 'last_7_days') {
+      const targetDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      where.createdAt = { gte: targetDate };
+    } else if (filter === 'last_24_hours') {
+      const targetDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      where.createdAt = { gte: targetDate };
+    } else if (beforeDate || afterDate) {
+      where.createdAt = {};
+      if (beforeDate) where.createdAt.lt = new Date(String(beforeDate));
+      if (afterDate) where.createdAt.gte = new Date(String(afterDate));
+    }
+
+    // Find submissions matching filter
+    const matchingSubmissions = await prisma.submission.findMany({
+      where,
+      select: { id: true, report: { select: { id: true } } },
+    });
+
+    const matchingIds = matchingSubmissions.map((s) => s.id);
+    const count = matchingIds.length;
+
+    if (count > 0) {
+      const reportIds = matchingSubmissions
+        .map((s) => s.report?.id)
+        .filter(Boolean) as string[];
+
+      await prisma.$transaction([
+        prisma.delivery.deleteMany({
+          where: { reportId: { in: reportIds } },
+        }),
+        prisma.report.deleteMany({
+          where: { id: { in: reportIds } },
+        }),
+        prisma.providerResult.deleteMany({
+          where: { submissionId: { in: matchingIds } },
+        }),
+        prisma.submission.deleteMany({
+          where: { id: { in: matchingIds } },
+        }),
+      ]);
+    }
 
     // Record audit log
     if (req.user) {
       await prisma.auditLog.create({
         data: {
           adminId: req.user.id,
-          action: 'CLEAR_OVERALL_SUBMISSION_HISTORY',
+          action: 'CLEAR_SUBMISSION_HISTORY',
           targetType: 'SYSTEM',
-          targetId: `Purged ${count} submissions`,
+          targetId: `Purged ${count} submissions with filter: ${filter || 'ALL'}`,
           ip: req.ip || '127.0.0.1',
         },
       });
     }
 
     res.json({
-      message: `Successfully cleared all ${count} submission records from ledger history.`,
+      message: `Successfully cleared ${count} submission records matching filter.`,
       purgedCount: count,
     });
   } catch (err: any) {
