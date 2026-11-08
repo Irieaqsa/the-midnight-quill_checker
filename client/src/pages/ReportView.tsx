@@ -303,6 +303,86 @@ export const ReportView: React.FC = () => {
             )}
           </div>
 
+          {/* Mechanical Pass & Top Flaws (TMQ Algorithm v2 Rule: Flaws before praise & caps) */}
+          {tmqSpecialData.mechanicalPass && (
+            <div className="tmq-card space-y-4">
+              <div className="border-b border-tmq-border-subtle pb-3">
+                <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-tmq-brand block">
+                  Forensic Mechanical Pass (v2)
+                </span>
+                <h3 className="text-[16px] font-semibold text-tmq-text-strong mt-0.5">
+                  Linguistic Counts & Calibrated Restraints
+                </h3>
+              </div>
+
+              {/* Top Flaws with quotes */}
+              {tmqSpecialData.mechanicalPass.topFlaws && tmqSpecialData.mechanicalPass.topFlaws.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-[12px] font-semibold uppercase tracking-wider text-tmq-danger block">
+                    Critical Flaws Identified (Rule: Flaws Before Praise)
+                  </span>
+                  <div className="space-y-2">
+                    {tmqSpecialData.mechanicalPass.topFlaws.map((flawItem: any, idx: number) => (
+                      <div key={idx} className="p-3 bg-tmq-surface-2 border border-tmq-danger/30 rounded-md space-y-1">
+                        <div className="text-[13px] font-semibold text-tmq-text-strong flex items-center gap-2">
+                          <AlertCircle className="w-3.5 h-3.5 text-tmq-danger flex-shrink-0" />
+                          <span>{flawItem.flaw}</span>
+                        </div>
+                        {flawItem.quote && (
+                          <div className="pl-3 border-l-2 border-tmq-danger/50 text-[12px] font-mono text-tmq-text-muted italic">
+                            &ldquo;{flawItem.quote}&rdquo;
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Triggered Caps */}
+              {tmqSpecialData.mechanicalPass.triggeredCaps && tmqSpecialData.mechanicalPass.triggeredCaps.length > 0 && (
+                <div className="p-3 bg-tmq-surface-2 border border-tmq-warning/40 rounded-md space-y-1.5">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-tmq-warning font-semibold block">
+                    Triggered Mechanical Caps Applied
+                  </span>
+                  <ul className="text-[12px] font-mono text-tmq-text-muted space-y-1 list-disc list-inside">
+                    {tmqSpecialData.mechanicalPass.triggeredCaps.map((cap: string, cIdx: number) => (
+                      <li key={cIdx}>{cap}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Counts summary row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+                <div className="p-2.5 bg-tmq-surface-2 rounded border border-tmq-border text-center">
+                  <div className="text-[10px] uppercase font-mono text-tmq-text-soft">Told Density</div>
+                  <div className="text-[14px] font-mono font-bold text-tmq-text-strong">
+                    {tmqSpecialData.mechanicalPass.toldEmotionDensityPer100}/100w
+                  </div>
+                </div>
+                <div className="p-2.5 bg-tmq-surface-2 rounded border border-tmq-border text-center">
+                  <div className="text-[10px] uppercase font-mono text-tmq-text-soft">Personal Moments</div>
+                  <div className="text-[14px] font-mono font-bold text-tmq-text-strong">
+                    {tmqSpecialData.mechanicalPass.personalMomentsCount}
+                  </div>
+                </div>
+                <div className="p-2.5 bg-tmq-surface-2 rounded border border-tmq-border text-center">
+                  <div className="text-[10px] uppercase font-mono text-tmq-text-soft">Stock Hits</div>
+                  <div className="text-[14px] font-mono font-bold text-tmq-text-strong">
+                    {tmqSpecialData.mechanicalPass.stockPhraseHitsCount}
+                  </div>
+                </div>
+                <div className="p-2.5 bg-tmq-surface-2 rounded border border-tmq-border text-center">
+                  <div className="text-[10px] uppercase font-mono text-tmq-text-soft">Syllable Spread</div>
+                  <div className="text-[14px] font-mono font-bold text-tmq-text-strong">
+                    {tmqSpecialData.mechanicalPass.syllableSpread}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Part 2: Quality Rating Result Card per DESIGN.md */}
           {tmqSpecialData.quality && (
             <div className="tmq-card space-y-6">

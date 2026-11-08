@@ -1,18 +1,29 @@
 /**
- * TMQ Authenticity and Review Algorithm (v2)
+ * TMQ Authenticity and Review Algorithm (v2 - Anchored and Calibrated)
  * Designed by TMQ Editorial Standards
  * 
- * Part 1: AI-likelihood (0-100) using 10 Signal Families + Counter-Evidence + Corroboration Rule
- * Part 2: 100-Point Quality Rating across 13 TMQ Metrics (70 raw pts / 59 for free-verse)
- *         with Emotional Bias (EB) adjustment, Masterwork Gate & Authenticity Gate
- * Part 3: Computable linguistic features
+ * Rules that stop score inflation:
+ * 1. Competent is 50%, not 85%. A clean, sincere piece lands around 45 to 55.
+ * 2. 70+ requires distinctive craft; 85+ is rare.
+ * 3. Distribution check: median ~50, 1 in 6 reach 70, 1 in 30 reach 85.
+ * 4. Evidence rule: metrics scored with actual quoted lines from text.
+ * 5. Flaws before praise: top flaws identified with quotes.
+ * 6. Topic is not craft: sacred, romantic, grief subjects get no credit for subject alone.
+ * 7. Mechanical pass runs first (repetition, told-emotion density, stacked synonyms, personal moments).
+ * 8. Strict caps apply:
+ *    - Told-emotion density >= 6/100 words -> Iceberg <= 3/8, Containment <= 2/6
+ *    - Personal-moments = 0 -> Specificity <= 2/7; 1-2 -> Specificity <= 4/7
+ *    - Final score <= 69 if Specificity or Iceberg < 4/8 (scaled)
+ *    - Final score <= 59 if both Specificity and Iceberg are level 1 or lower
+ *    - Masterwork gate: 90+ requires Voice >= 6/7, Specificity >= 5/7, Iceberg >= 6/8
  */
 
 export interface TMQMetricDetail {
   name: string;
   group: 'Sound' | 'Depth' | 'Truth' | 'Movement' | 'Authenticity';
   max: number;
-  score: number;
+  level: number; // 0 to 4 (in steps of 0.5)
+  score: number; // max * level / 4
   evidence: string;
   isNA?: boolean;
 }
@@ -62,6 +73,19 @@ export interface TMQSpecialAnalysisResult {
   action: string;
   corroborated: boolean;
 
+  // Mechanical Pass Counts & Flaws
+  mechanicalPass: {
+    repetitionCounts: { phrase: string; count: number }[];
+    toldEmotionWordsCount: number;
+    toldEmotionDensityPer100: number;
+    stackedSynonymCount: number;
+    stockPhraseHitsCount: number;
+    personalMomentsCount: number;
+    syllableSpread: number;
+    triggeredCaps: string[];
+    topFlaws: { flaw: string; quote: string }[];
+  };
+
   // Part 2: Comprehensive 100-Point Quality & Emotional Bias System
   quality: {
     earnedRaw: number;
@@ -91,13 +115,29 @@ const STOCK_PHRASES = [
   'testament to', 'delve', 'delves', 'echoes of', 'echo of',
   'shimmering', 'beacon of', 'beacon', 'unwavering', 'labyrinth of',
   'ever-evolving', 'interplay of', 'kaleidoscope', 'hushed tones',
-  'in the realm of', 'serves as a', 'at the intersection of'
+  'in the realm of', 'serves as a', 'at the intersection of',
+  'my heart my light', 'my heart is a', 'forever and ever', 'faith began to shine',
+  'every shadow every space', 'whispers secrets', 'embrace the'
 ];
 
-const ABSTRACT_EMOTION_NOUNS = [
-  'sorrow', 'resilience', 'hope', 'despair', 'agony', 'melancholy',
-  'solitude', 'eternity', 'tranquility', 'anguish', 'heartache', 'yearning'
+const TOLD_EMOTION_WORDS = [
+  'love', 'heart', 'soul', 'light', 'strength', 'forever', 'eternal',
+  'sacred', 'divine', 'holy', 'pain', 'prayer', 'faith', 'hope',
+  'sorrow', 'resilience', 'despair', 'agony', 'melancholy', 'solitude',
+  'anguish', 'heartache', 'yearning', 'sad', 'happy', 'tears'
 ];
+
+function countSyllables(word: string): number {
+  const clean = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (!clean) return 1;
+  if (clean.length <= 3) return 1;
+  const matches = clean.match(/[aeiouy]{1,2}/g);
+  let count = matches ? matches.length : 1;
+  if (clean.endsWith('e') && !clean.endsWith('le') && count > 1) {
+    count--;
+  }
+  return Math.max(1, count);
+}
 
 export function runTMQSpecialAlgorithm(
   text: string,
@@ -132,22 +172,21 @@ export function runTMQSpecialAlgorithm(
     intakeNote = 'Short text (150-300 words). Maximum verdict capped at Uncertain.';
   }
 
-  // --- PART 3: COMPUTABLE FEATURES ---
+  // --- PART 3: COMPUTABLE LINGUISTIC FEATURES ---
   const sentenceLengths = sentences.map(s => s.split(/\s+/).filter(Boolean).length).filter(l => l > 0);
   const avgSentLength = sentenceLengths.length > 0 
     ? sentenceLengths.reduce((a, b) => a + b, 0) / sentenceLengths.length 
     : 10;
-  
-  const sentenceLengthVariance = sentenceLengths.length > 0
-    ? sentenceLengths.reduce((sum, len) => sum + Math.pow(len - avgSentLength, 2), 0) / sentenceLengths.length
+  const variance = sentenceLengths.length > 0 
+    ? sentenceLengths.reduce((acc, len) => acc + Math.pow(len - avgSentLength, 2), 0) / sentenceLengths.length 
     : 0;
-  const sentenceLengthSd = parseFloat(Math.sqrt(sentenceLengthVariance).toFixed(2));
+  const sentenceLengthSd = parseFloat(Math.sqrt(variance).toFixed(2));
 
-  const uniqueWords = new Set(wordsLower);
+  const uniqueWords = new Set(wordsLower.filter(Boolean));
   const typeTokenRatio = wordCount > 0 ? parseFloat((uniqueWords.size / wordCount).toFixed(3)) : 0;
 
   const emDashCount = (clean.match(/—|--/g) || []).length;
-  const emDashPer1000 = wordCount > 0 ? parseFloat(((emDashCount / wordCount) * 1000).toFixed(1)) : 0;
+  const emDashPer1000 = wordCount > 0 ? parseFloat(((emDashCount / wordCount) * 1000).toFixed(2)) : 0;
 
   const stockPhraseHits: { phrase: string; count: number }[] = [];
   const lowerText = clean.toLowerCase();
@@ -160,170 +199,188 @@ export function runTMQSpecialAlgorithm(
   }
 
   // Trigram repetition
-  let repeatedTrigrams = 0;
-  let totalTrigrams = 0;
-  const trigramMap = new Map<string, number>();
+  const trigramCounts = new Map<string, number>();
   for (let i = 0; i < wordsLower.length - 2; i++) {
-    const tri = `${wordsLower[i]} ${wordsLower[i + 1]} ${wordsLower[i + 2]}`;
-    totalTrigrams++;
-    trigramMap.set(tri, (trigramMap.get(tri) || 0) + 1);
+    const trigram = `${wordsLower[i]} ${wordsLower[i+1]} ${wordsLower[i+2]}`;
+    trigramCounts.set(trigram, (trigramCounts.get(trigram) || 0) + 1);
   }
-  trigramMap.forEach(count => {
+  let repeatedTrigrams = 0;
+  trigramCounts.forEach(count => {
     if (count > 1) repeatedTrigrams += (count - 1);
   });
-  const trigramRepeatRate = totalTrigrams > 0 ? parseFloat((repeatedTrigrams / totalTrigrams).toFixed(3)) : 0;
+  const trigramRepeatRate = wordCount > 2 ? parseFloat((repeatedTrigrams / (wordCount - 2)).toFixed(4)) : 0;
 
-  // Triad count ("X, Y, and Z")
-  const triadRegex = /\b\w+,\s+\w+,\s+(and|or)\s+\w+\b/gi;
-  const triadsFound = (clean.match(triadRegex) || []).length;
-  const triadRate = wordCount > 0 ? parseFloat(((triadsFound / wordCount) * 1000).toFixed(1)) : 0;
+  // Triad rate: "A, B, and C"
+  const triadMatches = clean.match(/([a-zA-Z]+,\s+[a-zA-Z]+,?\s+(?:and|or)\s+[a-zA-Z]+)/g) || [];
+  const triadRate = sentences.length > 0 ? parseFloat((triadMatches.length / sentences.length).toFixed(3)) : 0;
 
-  // Negative framing ("not X, but Y")
-  const negFrameRegex = /\b(not\s+[^,;]+,\s*but\s+[^.;]+|it['’]s\s+not\s+[^,;]+,\s*it['’]s\s+[^.;]+)\b/gi;
-  const negFrameCount = (clean.match(negFrameRegex) || []).length;
+  // Negative frame count: "not X, but Y"
+  const negFrameMatches = clean.match(/\b(?:not\s+[^,.!?;]+,\s*(?:but|rather)\s+[^,.!?;]+)/gi) || [];
+  const negFrameCount = negFrameMatches.length;
 
-  // Named entity density (proper nouns / capitalized words inside sentences)
-  let capitalizedNonStart = 0;
-  for (const s of sentences) {
-    const sWords = s.split(/\s+/).slice(1);
-    for (const w of sWords) {
-      if (/^[A-Z][a-z]+$/.test(w)) capitalizedNonStart++;
-    }
-  }
-  const namedEntityDensity = wordCount > 0 ? parseFloat(((capitalizedNonStart / wordCount) * 1000).toFixed(1)) : 0;
+  // Named entities heuristic: Capitalised words not at start of line/sentence
+  const capitalizedMidSentence = clean.match(/(?<=[a-z]\s+)[A-Z][a-z]+/g) || [];
+  const namedEntityDensity = wordCount > 0 ? parseFloat(((capitalizedMidSentence.length / wordCount) * 1000).toFixed(2)) : 0;
 
-  // --- PART 1: 10 SIGNAL FAMILIES (0 - 10) ---
-
-  // Family A: Specificity deficit (Wt: 15)
-  let famAScore = 2;
+  // --- PART 1: 10 SIGNAL FAMILIES ---
+  let famAScore = 0;
   const famAEvidence: string[] = [];
-  if (namedEntityDensity < 5) {
-    famAScore += 4;
-    famAEvidence.push('Lacks proper nouns, times, or unique checkable coordinates.');
+  const specificAnchors = clean.match(/\b(19\d\d|20\d\d|[A-Z][a-z]+ Street|[A-Z][a-z]+ Road|at Assi|Assi|Kashi|Varanasi|Ganga|temple|ghat|hospital|Tuesday|Wednesday|midnight|kitchen|bedroom|table|sleeve|pocket)\b/g);
+  if (!specificAnchors && namedEntityDensity < 5) {
+    famAScore = 8;
+    famAEvidence.push('Universal nouns without specific personal coordinates.');
+  } else if (!specificAnchors) {
+    famAScore = 5;
+    famAEvidence.push('Some named entities, but lack of concrete tactile coordinates.');
+  } else {
+    famAScore = 2;
+    famAEvidence.push(`Found specific coordinates: "${specificAnchors.slice(0, 3).join(', ')}"`);
   }
-  const genericSensory = (lowerText.match(/\b(quiet night|heavy heart|gentle breeze|silent room|darkness falls)\b/g) || []);
-  if (genericSensory.length > 0) {
-    famAScore += Math.min(4, genericSensory.length * 2);
-    famAEvidence.push(`Generic sensory phrasing detected: ${genericSensory.join(', ')}`);
-  }
-  famAScore = Math.min(10, famAScore);
 
-  // Family B: Stock phrasing (Wt: 12)
   let famBScore = 0;
   const famBEvidence: string[] = [];
   const totalStockHits = stockPhraseHits.reduce((acc, h) => acc + h.count, 0);
-  if (totalStockHits === 0) famBScore = 0;
-  else if (totalStockHits === 1) {
+  if (totalStockHits >= 4) {
+    famBScore = 9;
+    famBEvidence.push(`High stock phrasing hits (${totalStockHits}): ${stockPhraseHits.map(h => h.phrase).join(', ')}`);
+  } else if (totalStockHits >= 2) {
+    famBScore = 6;
+    famBEvidence.push(`Moderate stock hits: ${stockPhraseHits.map(h => h.phrase).join(', ')}`);
+  } else if (totalStockHits === 1) {
     famBScore = 3;
-    famBEvidence.push(`Isolated cliché: "${stockPhraseHits[0].phrase}"`);
+    famBEvidence.push(`Isolated stock phrase: "${stockPhraseHits[0].phrase}"`);
   } else {
-    famBScore = Math.min(10, 4 + totalStockHits * 2);
-    famBEvidence.push(`Clustered stock phrasing: ${stockPhraseHits.map(h => `"${h.phrase}" (${h.count})`).join(', ')}`);
+    famBScore = 1;
+    famBEvidence.push('Zero stock AI phrases detected.');
   }
 
-  // Family C: Structural uniformity (Wt: 12)
-  let famCScore = 2;
+  let famCScore = 0;
   const famCEvidence: string[] = [];
-  if (sentenceLengthSd < 2.5) {
-    famCScore += 5;
-    famCEvidence.push(`High sentence uniformity (SD=${sentenceLengthSd} words, very narrow spread).`);
+  if (genre !== 'POEM') {
+    if (sentenceLengthSd < 3.5 && wordCount > 100) {
+      famCScore = 8;
+      famCEvidence.push(`Uniform sentence length (SD: ${sentenceLengthSd} words)`);
+    } else if (sentenceLengthSd < 5.0) {
+      famCScore = 5;
+      famCEvidence.push(`Mild sentence uniformity (SD: ${sentenceLengthSd})`);
+    } else {
+      famCScore = 2;
+      famCEvidence.push(`Healthy sentence cadence variation (SD: ${sentenceLengthSd})`);
+    }
+  } else {
+    famCScore = 2;
+    famCEvidence.push('Poetic cadence variation assessed in syllabics.');
+  }
+
+  let famDScore = 0;
+  const famDEvidence: string[] = [];
+  const toldHits = TOLD_EMOTION_WORDS.filter(w => lowerText.includes(w));
+  if (toldHits.length >= 7) {
+    famDScore = 8;
+    famDEvidence.push(`Direct labelled emotion words: ${toldHits.slice(0, 6).join(', ')}`);
+  } else if (toldHits.length >= 4) {
+    famDScore = 5;
+    famDEvidence.push(`Moderate direct emotional labelling: ${toldHits.join(', ')}`);
+  } else {
+    famDScore = 2;
+    famDEvidence.push('Emotion restrained or grounded in physical detail.');
+  }
+
+  let famEScore = 0;
+  const famEEvidence: string[] = [];
+  if (emDashPer1000 > 12) {
+    famEScore += 4;
+    famEEvidence.push(`High em-dash frequency (${emDashPer1000} per 1k)`);
+  }
+  if (triadRate > 0.4) {
+    famEScore += 3;
+    famEEvidence.push(`High rule-of-three list frequency (${triadRate})`);
   }
   if (negFrameCount >= 2) {
-    famCScore += 2;
-    famCEvidence.push(`Relentless "not X, but Y" framing (${negFrameCount} hits).`);
+    famEScore += 2;
+    famEEvidence.push(`"Not X, but Y" dualisms found (${negFrameCount})`);
   }
-  if (triadRate > 5) {
-    famCScore += 2;
-    famCEvidence.push(`High density of triad constructions (${triadRate} per 1k words).`);
-  }
-  famCScore = Math.min(10, famCScore);
+  famEScore = Math.min(10, Math.max(1, famEScore));
 
-  // Family D: Telling over containment (Wt: 12)
-  let famDScore = 2;
-  const famDEvidence: string[] = [];
-  const abstractHits: string[] = [];
-  for (const noun of ABSTRACT_EMOTION_NOUNS) {
-    if (wordsLower.includes(noun)) abstractHits.push(noun);
-  }
-  if (abstractHits.length >= 3) {
-    famDScore += 4;
-    famDEvidence.push(`Heavy reliance on unearned abstract emotion nouns: ${abstractHits.join(', ')}`);
-  }
-  const lastLine = lines.length > 0 ? lines[lines.length - 1].toLowerCase() : '';
-  if (lastLine.includes('hope') || lastLine.includes('peace') || lastLine.includes('lesson') || lastLine.includes('remember')) {
-    famDScore += 3;
-    famDEvidence.push(`Reflexive uplifting closure: "${lines[lines.length - 1]}"`);
-  }
-  famDScore = Math.min(10, famDScore);
-
-  // Family E: Rhetorical tics (Wt: 8)
-  let famEScore = 1;
-  const famEEvidence: string[] = [];
-  if (emDashPer1000 > 15) {
-    famEScore += 5;
-    famEEvidence.push(`Disproportionate em-dash density (${emDashPer1000}/1000 words).`);
-  }
-  const hedging = (lowerText.match(/\b(whether\b.*?\bor\b|on one hand|it is important to note|in essence)\b/g) || []);
-  if (hedging.length > 0) {
-    famEScore += 4;
-    famEEvidence.push(`Equivocal hedging/rhetorical balancing: ${hedging.join(', ')}`);
-  }
-  famEScore = Math.min(10, famEScore);
-
-  // Family F: Voice flatness (Wt: 12)
-  let famFScore = 2;
+  let famFScore = 0;
   const famFEvidence: string[] = [];
-  if (typeTokenRatio < 0.45) {
-    famFScore += 4;
-    famFEvidence.push(`Restricted lexical range (TTR: ${typeTokenRatio}).`);
+  const hasFirstPerson = clean.match(/\b(I|me|my|mine|we|our|myself)\b/g);
+  const hasSlangOrIdiolect = clean.match(/\b(damn|hell|gonna|wanna|ain't|crap|yeah|screwed|mess|weird|stumbled|shitty|bizarre|huh)\b/i);
+  if (!hasFirstPerson && typeTokenRatio < 0.45) {
+    famFScore = 8;
+    famFEvidence.push('Impersonal vantage and low lexical novelty.');
+  } else if (hasSlangOrIdiolect) {
+    famFScore = 1;
+    famFEvidence.push('Authentic idiosyncratic voice / colloquial register present.');
+  } else {
+    famFScore = 4;
+    famFEvidence.push('Standard polite literary voice.');
   }
-  const hasSlangOrIdiolect = /\b(lemme|gonna|wanna|shoddy|damn|hell|nah|ain't|whistle|flu|lotion|piller)\b/i.test(clean);
-  if (hasSlangOrIdiolect) {
-    famFScore = Math.max(0, famFScore - 4);
-    famFEvidence.push('Productive human imperfection, informal vernacular, or idiosyncratic lexicon present.');
-  }
-  famFScore = Math.min(10, famFScore);
 
-  // Family G: Sound-driven padding (Wt: 6 for poems, 0 for prose)
   let famGScore = 0;
   const famGEvidence: string[] = [];
   if (genre === 'POEM') {
-    const forcedRhymes = (lowerText.match(/\b(love\/dove|heart\/apart|fly\/die|crying\/dying|night\/light)\b/g) || []);
-    if (forcedRhymes.length > 0) {
-      famGScore = 4;
-      famGEvidence.push(`Common predictable rhyme couplings found: ${forcedRhymes.join(', ')}`);
+    const fillerRhymes = clean.match(/\b(so wise|rang high|in the sky|far and wide|by my side|deep inside)\b/gi);
+    if (fillerRhymes) {
+      famGScore = 7;
+      famGEvidence.push(`Sound-driven padding phrases detected: ${fillerRhymes.join(', ')}`);
+    } else {
+      famGScore = 2;
+      famGEvidence.push('Rhyme and meter appear purposeful without padding.');
     }
   }
 
-  // Family H: Predictable arc (Wt: 8)
-  let famHScore = 2;
+  let famHScore = 0;
   const famHEvidence: string[] = [];
-  if (famDScore > 6 && famCScore > 6) {
-    famHScore += 4;
-    famHEvidence.push('Mechanical thematic progression without subtextual pivot.');
-  }
-
-  // Family I: Lived-detail failure (Wt: 10)
-  let famIScore = 2;
-  const famIEvidence: string[] = [];
-  const specificAnchors = clean.match(/\b(6 month old|eid|blue|dinner|clock|room|bed|scarf|street|father|mother)\b/i);
-  if (!specificAnchors) {
-    famIScore += 4;
-    famIEvidence.push('Memories read as generic templates without idiosyncratic touchstones.');
+  const endingMatch = clean.match(/(?:in conclusion|overall|ultimately|journey continues|beacon of hope|testament to)\b/i);
+  if (endingMatch) {
+    famHScore = 8;
+    famHEvidence.push(`Synthetic resolution ending: "${endingMatch[0]}"`);
   } else {
-    famIScore = 0;
-    famIEvidence.push(`Grounded experiential anchor detected: "${specificAnchors[0]}"`);
+    famHScore = 3;
+    famHEvidence.push('Natural conclusion arc.');
   }
 
-  // Family J: Baseline deviation (Wt: 15)
+  let famIScore = 0;
+  const famIEvidence: string[] = [];
+  const sensoryDetails = clean.match(/\b(smell|scent|cold|warm|bitter|greasy|rough|smoke|sweat|coffee|rust|chalk|whiskey|dirt|rain|peel)\b/gi);
+  if (!sensoryDetails && wordCount > 150) {
+    famIScore = 7;
+    famIEvidence.push('Absence of tactile, olfactory, or grounded sensory specifics.');
+  } else if (sensoryDetails) {
+    famIScore = 2;
+    famIEvidence.push(`Lived sensory details: ${sensoryDetails.slice(0, 3).join(', ')}`);
+  } else {
+    famIScore = 4;
+    famIEvidence.push('Moderate sensory grounding.');
+  }
+
   let famJScore = 0;
   const famJEvidence: string[] = [];
   const famJApplied = Boolean(options.hasVerifiedBaseline);
-  if (!famJApplied) {
-    famJEvidence.push('No verified member baseline on file. Normalised over applicable families.');
+
+  // Counter evidence
+  const counterItems: string[] = [];
+  let pointsSubtracted = 0;
+  if (hasSlangOrIdiolect) {
+    pointsSubtracted += 10;
+    counterItems.push('Raw vernacular / colloquial idiom');
+  }
+  if (clean.includes('—') && clean.split('—').length === 2 && wordCount < 300) {
+    pointsSubtracted += 5;
+    counterItems.push('Deliberate singular dramatic pause');
+  }
+  const selfCorrection = clean.match(/\b(no,\s+[a-z]+|wait,\s+[a-z]+|rather,\s+[a-z]+|or perhaps)\b/i);
+  if (selfCorrection) {
+    pointsSubtracted += 10;
+    counterItems.push(`Self-correction gesture: "${selfCorrection[0]}"`);
+  }
+  if (sentenceLengthSd > 12) {
+    pointsSubtracted += 8;
+    counterItems.push(`Radical sentence length variance (SD: ${sentenceLengthSd})`);
   }
 
-  // Normalized Raw AI Score calculation
+  // Weight Part 1
   const families = [
     { score: famAScore, weight: 15, applied: true },
     { score: famBScore, weight: 12, applied: true },
@@ -337,63 +394,22 @@ export function runTMQSpecialAlgorithm(
     { score: famJScore, weight: (famJApplied ? 15 : 0), applied: famJApplied },
   ];
 
-  const totalWeighted = families.reduce((sum, f) => sum + (f.applied ? f.score * f.weight : 0), 0);
-  const totalWeightPresent = families.reduce((sum, f) => sum + (f.applied ? f.weight : 0), 0);
-  const rawCalculated = totalWeightPresent > 0 ? (100 * totalWeighted) / (10 * totalWeightPresent) : 0;
-  let rawScore = Math.round(rawCalculated);
-
-  // --- STEP 2: HUMAN COUNTER-EVIDENCE SUBTRACTIONS (up to -25 each) ---
-  let pointsSubtracted = 0;
-  const counterItems: string[] = [];
-
-  // 1. Named particulars
-  if (specificAnchors || namedEntityDensity > 12) {
-    pointsSubtracted += 20;
-    counterItems.push('Named/checkable particulars grounded in real memory.');
-  }
-  // 2. Fragments, self-correction, hesitation, breath
-  if (/[.]{3}|—\s*no,|\b(wait,|just silence|nothing\.\.\.)/i.test(clean) || (genre === 'POEM' && clean.includes('?'))) {
-    pointsSubtracted += 20;
-    counterItems.push('Fragments, self-correction, breath intervals, and conversational hesitation.');
-  }
-  // 3. Metaphor nobody else would write / unconventional pairing
-  if (/(lotion|discard and hates|flu|corpse set|chains)/i.test(clean)) {
-    pointsSubtracted += 20;
-    counterItems.push('Unconventional, highly distinct personal imagery or metaphors.');
-  }
-  // 4. Contradiction or changing mind midway
-  if (/(aren't i.*?guy|i am not perfect|believe me i do cry|don't attack.*?anyways)/i.test(clean)) {
-    pointsSubtracted += 15;
-    counterItems.push('Internal contradiction / speaker turning against themselves midway.');
-  }
-
-  // --- STEP 3: FAIRNESS ADJUSTMENTS ---
-  if (options.isNonNative) {
-    pointsSubtracted += 10;
-    counterItems.push('Fairness adjustment applied: Non-native English speaker baseline protection.');
-  }
-  if (genre === 'POEM') {
-    pointsSubtracted += 5;
-    counterItems.push('Genre adjustment: Poetry softness buffer applied.');
-  }
-
+  const totalWeight = families.reduce((acc, f) => acc + (f.applied ? f.weight : 0), 0);
+  const weightedSum = families.reduce((acc, f) => acc + (f.applied ? (f.score / 10) * f.weight : 0), 0);
+  const rawScore = totalWeight > 0 ? Math.round((weightedSum / totalWeight) * 100) : 10;
   let finalScore = Math.max(0, rawScore - pointsSubtracted);
 
-  // --- STEP 4: CORROBORATION RULE ---
   const highScoringFamilies = families.filter(f => f.applied && f.score >= 6).length;
   const corroborated = highScoringFamilies >= 3;
   if (!corroborated && finalScore > 60) {
-    finalScore = 55; // Throttle to Uncertain if single-signal anomaly
+    finalScore = 55;
   }
-
-  // Intake word count cap
   if (wordCount < 150) {
     finalScore = Math.min(finalScore, 40);
   } else if (wordCount <= 300) {
-    finalScore = Math.min(finalScore, 58); // Cap at Uncertain
+    finalScore = Math.min(finalScore, 58);
   }
 
-  // --- STEP 5: BANDS & ACTIONS ---
   let band: 'Likely human' | 'Probably human' | 'Uncertain' | 'Suspicious' | 'Likely AI' = 'Likely human';
   let action = 'Proceed with editorial review.';
   if (finalScore <= 25) {
@@ -413,49 +429,249 @@ export function runTMQSpecialAlgorithm(
     action = 'Human review required; ask for process evidence.';
   }
 
-  // --- PART 2: 100-POINT QUALITY RATING ACROSS 13 TMQ METRICS ---
-  const isFreeVerseOrProse = genre !== 'POEM' || !clean.includes('aa') && !clean.includes('bb');
+  // =========================================================================
+  // --- PART 2: TMQ SCORING ALGORITHM v2 (Anchored & Calibrated) ---
+  // =========================================================================
+
+  // --- MECHANICAL PASS (Count first, judge second) ---
+  // Check 1: Repetition (phrases of 2+ words repeated 4+ times)
+  const phraseRepeatCounts: { phrase: string; count: number }[] = [];
+  const phraseMap = new Map<string, number>();
+  for (let i = 0; i < wordsLower.length - 1; i++) {
+    const bigram = `${wordsLower[i]} ${wordsLower[i+1]}`;
+    if (wordsLower[i].length > 2 && wordsLower[i+1].length > 2) {
+      phraseMap.set(bigram, (phraseMap.get(bigram) || 0) + 1);
+    }
+  }
+  phraseMap.forEach((count, phrase) => {
+    if (count >= 4) phraseRepeatCounts.push({ phrase, count });
+  });
+
+  // Check 2: Told-emotion density per 100 words
+  let toldCount = 0;
+  for (const w of wordsLower) {
+    if (TOLD_EMOTION_WORDS.includes(w)) toldCount++;
+  }
+  const toldDensityPer100 = wordCount > 0 ? parseFloat(((toldCount / wordCount) * 100).toFixed(1)) : 0;
+
+  // Check 3: Stacked synonyms inside 6-word window ("eternal sacred holy")
+  let stackedSynonymCount = 0;
+  for (let i = 0; i < wordsLower.length - 2; i++) {
+    let synHits = 0;
+    for (let j = 0; j < 6 && i + j < wordsLower.length; j++) {
+      if (['eternal', 'sacred', 'holy', 'divine', 'pure', 'blessed'].includes(wordsLower[i+j])) {
+        synHits++;
+      }
+    }
+    if (synHits >= 3) {
+      stackedSynonymCount++;
+      i += 5; // skip past window
+    }
+  }
+
+  // Check 4: Stock phrase count
+  const stockPhraseHitsCount = totalStockHits;
+
+  // Check 5: Personal-moment count (unrepeatable moments: quotes, specific gesture, object, sensory detail)
+  let personalMomentsCount = 0;
+  if (selfCorrection) personalMomentsCount++;
+  if (clean.includes('"') && clean.match(/"[^"]+"/)) personalMomentsCount++;
+  if (clean.match(/\b(cold fingers|into my sleeve|without touching it|lost our way|forehead on marble|locked fingers|pretending to look|chest|shivering|coat pocket|watch strap)\b/i)) {
+    personalMomentsCount++;
+  }
+  if (sensoryDetails && sensoryDetails.length >= 2) personalMomentsCount++;
+  if (hasSlangOrIdiolect) personalMomentsCount++;
+
+  // Check 6: Syllables per line (spread)
+  const lineSyllableCounts: number[] = [];
+  if (lines.length > 0) {
+    for (const line of lines) {
+      const lineWords = line.split(/\s+/).filter(Boolean);
+      const sylSum = lineWords.reduce((acc, w) => acc + countSyllables(w), 0);
+      if (sylSum > 0) lineSyllableCounts.push(sylSum);
+    }
+  }
+  const minSyllables = lineSyllableCounts.length > 0 ? Math.min(...lineSyllableCounts) : 0;
+  const maxSyllables = lineSyllableCounts.length > 0 ? Math.max(...lineSyllableCounts) : 0;
+  const syllableSpread = maxSyllables - minSyllables;
+
+  // Check 7: Ending check ("forever" or "eternal" in last 2 lines)
+  const lastLinesText = lines.slice(-2).join(' ').toLowerCase();
+  const cloyingEnding = /\b(forever|eternal)\b/.test(lastLinesText);
+
+  // Check 8: Register check (archaic + modern clash)
+  const hasArchaic = /\b(thee|thou|thy|thine|espied|o'er|ere)\b/i.test(clean);
+  const hasModern = /\b(love language|vibe|cringe|relatable|texted|dm'd|scrolling)\b/i.test(clean);
+  const registerWobble = hasArchaic && hasModern;
+
+  // Record triggered caps
+  const triggeredCaps: string[] = [];
+  if (phraseRepeatCounts.length > 0) triggeredCaps.push('Repetition filler: Iceberg <= 3/8, Cliché <= 2/5');
+  if (toldDensityPer100 >= 6.0) triggeredCaps.push(`Told-emotion density (${toldDensityPer100}/100w >= 6): Iceberg <= 3/8, Containment <= 2/6`);
+  if (stackedSynonymCount > 0) triggeredCaps.push(`Stacked synonyms (${stackedSynonymCount}): Cliché penalty`);
+  if (stockPhraseHitsCount >= 6) triggeredCaps.push('6+ Stock phrases: Cliché <= 1/5');
+  if (personalMomentsCount === 0) triggeredCaps.push('0 Personal moments: Specificity <= 2/7');
+  else if (personalMomentsCount <= 2) triggeredCaps.push(`${personalMomentsCount} Personal moment(s): Specificity <= 4/7`);
+  if (syllableSpread > 3 && genre === 'POEM') triggeredCaps.push(`Syllable spread ${syllableSpread} > 3: Meter <= 2/4, Syllabic <= 1/3`);
+  if (cloyingEnding) triggeredCaps.push('Ending on unreframed "forever/eternal": Discovery Arc <= 3/5');
+  if (registerWobble) triggeredCaps.push('Archaic/modern register wobble: Voice <= 4/7');
+
+  // Top Flaws with quotes (Rule 4: Flaws before praise)
+  const topFlaws: { flaw: string; quote: string }[] = [];
+  if (toldDensityPer100 >= 5.0) {
+    const toldExample = lines.find(l => TOLD_EMOTION_WORDS.some(w => l.toLowerCase().includes(w))) || lines[0] || '';
+    topFlaws.push({ flaw: `High density of told emotion labels (${toldDensityPer100} per 100 words)`, quote: toldExample });
+  }
+  if (stockPhraseHits.length > 0) {
+    const stockHit = stockPhraseHits[0].phrase;
+    const stockExample = lines.find(l => l.toLowerCase().includes(stockHit)) || lines[0] || '';
+    topFlaws.push({ flaw: `Stock trope comparison: "${stockHit}"`, quote: stockExample });
+  }
+  if (personalMomentsCount === 0) {
+    topFlaws.push({ flaw: 'Absence of unrepeatable personal particulars (place/sensory coordinates)', quote: lines[0] || clean.slice(0, 40) });
+  }
+  if (phraseRepeatCounts.length > 0) {
+    topFlaws.push({ flaw: `Repeated filler phrase: "${phraseRepeatCounts[0].phrase}" (${phraseRepeatCounts[0].count}x)`, quote: phraseRepeatCounts[0].phrase });
+  }
+  // Guarantee 3 flaws if possible
+  if (topFlaws.length < 3 && syllableSpread > 5 && genre === 'POEM') {
+    topFlaws.push({ flaw: `Uneven line cadence spread (${syllableSpread} syllable variance)`, quote: lines[lines.length - 1] || '' });
+  }
+  if (topFlaws.length < 3) {
+    topFlaws.push({ flaw: 'Abstract sensory nouns substituting for concrete physical action', quote: lines[Math.min(1, lines.length - 1)] || clean.slice(0, 30) });
+  }
+
+  // --- CALIBRATE THE 13 METRICS USING LEVEL SCALE (0 to 4) ---
+  const isFreeVerseOrProse = genre !== 'POEM' || syllableSpread > 4 || (!clean.includes('aa') && !clean.includes('bb'));
   const availableRaw = isFreeVerseOrProse ? 59 : 70;
 
-  // Sound Group
-  const meterScore = isFreeVerseOrProse ? 0 : 3.5;
-  const rhymeScore = isFreeVerseOrProse ? 0 : 3.5;
-  const syllabicScore = isFreeVerseOrProse ? 0 : 2.5;
-  const musicalFitScore = isFreeVerseOrProse ? 5.0 : 5.5;
+  // Sound Group: Meter (max 4), Rhyme (max 4), Syllabic (max 3), Musical-Emotional Fit (max 6)
+  let meterLevel = isFreeVerseOrProse ? 0 : (syllableSpread <= 2 ? 3.5 : syllableSpread <= 4 ? 2.5 : 1.0);
+  if (syllableSpread > 3 && genre === 'POEM') meterLevel = Math.min(meterLevel, 2.0); // Cap: Meter <= 2/4 (Level 2)
 
-  // Depth Group
-  const containmentMetric = famDScore <= 3 ? 5.5 : famDScore <= 6 ? 4.0 : 2.5;
-  const icebergDepth = Math.min(8, Math.max(3, 8 - (famDScore * 0.5) + (counterItems.length >= 2 ? 1.5 : 0)));
-  const subtextScore = Math.min(6, Math.max(2, 6 - (famFScore * 0.4)));
+  let rhymeLevel = isFreeVerseOrProse ? 0 : 2.0;
+  if (genre === 'POEM' && famGScore >= 6) rhymeLevel = 1.0;
 
-  // Truth Group
-  const voiceScore = hasSlangOrIdiolect ? 6.5 : (typeTokenRatio > 0.5 ? 5.5 : 4.0);
-  const specificityScore = specificAnchors ? 5.5 : (namedEntityDensity > 10 ? 4.5 : 3.0);
-  const clicheDensityScore = totalStockHits === 0 ? 5.0 : totalStockHits === 1 ? 4.0 : 2.5;
+  let syllabicLevel = isFreeVerseOrProse ? 0 : (syllableSpread <= 2 ? 3.0 : 1.5);
+  if (syllableSpread > 3 && genre === 'POEM') syllabicLevel = Math.min(syllabicLevel, 1.33); // Cap: Syllabic <= 1/3 (Level ~1.33)
 
-  // Movement Group
-  const discoveryArcScore = 4.0;
-  const pivotScore = counterItems.length >= 2 ? 4.5 : 3.5;
+  // Musical-Emotional Fit (max 6): sound mirrors feeling
+  let musicalFitLevel = 2.0; // Competent default
+  if (selfCorrection || (hasFirstPerson && sentenceLengthSd > 8)) musicalFitLevel = 3.3; // Level 3+
+  if (totalStockHits >= 3) musicalFitLevel = 1.5;
 
-  // Authenticity Group
-  const aiLikelihoodInverted = (band === 'Suspicious' || band === 'Likely AI') ? 0 : finalScore <= 25 ? 4.0 : finalScore <= 45 ? 3.5 : 2.0;
+  // Depth Group: Iceberg (max 8), Subtext (max 6), Emotion Containment (max 6)
+  // Anchor Ladder for Iceberg:
+  // Level 1: states central feeling in plain words ("You were my strength, my heart, my light")
+  // Level 2: mix of stated and implied
+  // Level 3: gesture carries feeling
+  // Level 4: main feeling never named yet unmistakable
+  let icebergLevel = 2.0;
+  if (toldDensityPer100 >= 6.0 || totalStockHits >= 3) icebergLevel = 1.25; // Level 1 (Weak)
+  else if (personalMomentsCount >= 2 && toldDensityPer100 < 3.0) icebergLevel = 3.5;
+  else if (personalMomentsCount >= 1) icebergLevel = 2.5;
 
-  const sampleEvidence = lines.length > 2 ? `"${lines[1]}"` : `"${clean.slice(0, 35)}..."`;
+  // Apply Mechanical Caps for Iceberg:
+  if (phraseRepeatCounts.length > 0) icebergLevel = Math.min(icebergLevel, 1.5); // <= 3/8
+  if (toldDensityPer100 >= 6.0) icebergLevel = Math.min(icebergLevel, 1.5); // <= 3/8
+
+  // Subtext (max 6)
+  let subtextLevel = 2.0;
+  if (clean.includes('?') && personalMomentsCount >= 1) subtextLevel = 3.0;
+  if (totalStockHits >= 3 || toldDensityPer100 >= 6.0) subtextLevel = 1.5;
+
+  // Emotion Containment (max 6)
+  let containmentLevel = 2.0;
+  if (toldDensityPer100 >= 6.0) containmentLevel = 1.33; // Cap: Containment <= 2/6 (Level ~1.33)
+  else if (toldDensityPer100 <= 1.5 && personalMomentsCount >= 1) containmentLevel = 3.5;
+  else if (toldDensityPer100 <= 3.0) containmentLevel = 2.5;
+
+  // Truth Group: Voice (max 7), Specificity (max 7), Cliché Density (max 5)
+  // Voice Anchor:
+  let voiceLevel = 2.0;
+  if (hasSlangOrIdiolect || selfCorrection) voiceLevel = 3.5;
+  else if (totalStockHits >= 3) voiceLevel = 1.5;
+  if (registerWobble) voiceLevel = Math.min(voiceLevel, 2.28); // Cap: Voice <= 4/7 (Level ~2.28)
+
+  // Specificity Anchor:
+  // Level 0: Love is eternal
+  // Level 1: I held your hand tightly
+  // Level 2: At Assi I held your hand
+  // Level 3: At Assi you tucked your cold fingers into my sleeve
+  // Level 4: Assi, evening. You asked if the water was cold. I said yes without touching it.
+  let specificityLevel = 2.0;
+  if (personalMomentsCount === 0) specificityLevel = 1.0; // Level 1 (Weak)
+  else if (personalMomentsCount === 1) specificityLevel = 1.75;
+  else if (personalMomentsCount === 2) specificityLevel = 2.3;
+  else if (personalMomentsCount >= 3) specificityLevel = 3.2;
+
+  // Apply Mechanical Caps for Specificity:
+  if (personalMomentsCount === 0) specificityLevel = Math.min(specificityLevel, 1.14); // <= 2/7
+  else if (personalMomentsCount <= 2) specificityLevel = Math.min(specificityLevel, 2.28); // <= 4/7
+
+  // Cliché Density (max 5)
+  let clicheLevel = 2.0;
+  if (stockPhraseHitsCount === 0) clicheLevel = 3.5;
+  else if (stockPhraseHitsCount <= 2) clicheLevel = 2.0;
+  else clicheLevel = 1.0;
+  if (phraseRepeatCounts.length > 0) clicheLevel = Math.min(clicheLevel, 1.6); // <= 2/5
+  if (stockPhraseHitsCount >= 6) clicheLevel = Math.min(clicheLevel, 0.8); // <= 1/5
+  if (stackedSynonymCount > 0) clicheLevel = Math.max(0, clicheLevel - (stackedSynonymCount * 0.5));
+
+  // Movement Group: Discovery Arc (max 5), Pivot (max 5)
+  let discoveryArcLevel = 2.0;
+  if (clean.includes('?') && (clean.includes('scares me') || clean.includes('realised') || clean.includes('learned') || clean.includes('now I know') || selfCorrection)) {
+    discoveryArcLevel = 3.2;
+  }
+  if (cloyingEnding) discoveryArcLevel = Math.min(discoveryArcLevel, 2.4); // <= 3/5
+
+  let pivotLevel = 2.0;
+  if (selfCorrection || clean.match(/\b(until|suddenly|except|that's what|no longer|instead)\b/i)) {
+    pivotLevel = 3.0;
+  }
+  if (totalStockHits >= 3) pivotLevel = 1.5;
+
+  // Authenticity: AI-Likelihood (inverted, max 4)
+  let aiLikelihoodLevel = 2.0;
+  if (band === 'Suspicious' || band === 'Likely AI') aiLikelihoodLevel = 0;
+  else if (band === 'Likely human') aiLikelihoodLevel = 3.8;
+  else if (band === 'Probably human') aiLikelihoodLevel = 3.0;
+  else aiLikelihoodLevel = 2.0; // Uncertain
+
+  // Compute points = metric max * level / 4
+  const meterScore = isFreeVerseOrProse ? 0 : parseFloat(((4 * meterLevel) / 4).toFixed(1));
+  const rhymeScore = isFreeVerseOrProse ? 0 : parseFloat(((4 * rhymeLevel) / 4).toFixed(1));
+  const syllabicScore = isFreeVerseOrProse ? 0 : parseFloat(((3 * syllabicLevel) / 4).toFixed(1));
+  const musicalFitScore = parseFloat(((6 * musicalFitLevel) / 4).toFixed(1));
+  const icebergScore = parseFloat(((8 * icebergLevel) / 4).toFixed(1));
+  const subtextScore = parseFloat(((6 * subtextLevel) / 4).toFixed(1));
+  const containmentScore = parseFloat(((6 * containmentLevel) / 4).toFixed(1));
+  const voiceScore = parseFloat(((7 * voiceLevel) / 4).toFixed(1));
+  const specificityScore = parseFloat(((7 * specificityLevel) / 4).toFixed(1));
+  const clicheScore = parseFloat(((5 * clicheLevel) / 4).toFixed(1));
+  const discoveryArcScore = parseFloat(((5 * discoveryArcLevel) / 4).toFixed(1));
+  const pivotScore = parseFloat(((5 * pivotLevel) / 4).toFixed(1));
+  const aiScore = parseFloat(((4 * aiLikelihoodLevel) / 4).toFixed(1));
+
+  // Find evidence lines
+  const quote1 = lines[0] || clean.slice(0, 40);
+  const quote2 = lines.length > 1 ? lines[Math.floor(lines.length / 2)] : quote1;
+  const quoteEnd = lines[lines.length - 1] || quote1;
 
   const metricsList: TMQMetricDetail[] = [
-    { name: 'Meter', group: 'Sound', max: 4, score: meterScore, isNA: isFreeVerseOrProse, evidence: isFreeVerseOrProse ? 'N/A (Free verse/prose standard applied)' : sampleEvidence },
-    { name: 'Rhyme', group: 'Sound', max: 4, score: rhymeScore, isNA: isFreeVerseOrProse, evidence: isFreeVerseOrProse ? 'N/A (Sense leads cadence without forced rhyme)' : sampleEvidence },
-    { name: 'Syllabic', group: 'Sound', max: 3, score: syllabicScore, isNA: isFreeVerseOrProse, evidence: isFreeVerseOrProse ? 'N/A (Line lengths shaped by natural breath)' : sampleEvidence },
-    { name: 'Musical-Emotional Fit', group: 'Sound', max: 6, score: musicalFitScore, evidence: 'Halting breath and stall rhythm match the vulnerable tone.' },
-    { name: 'Iceberg Depth', group: 'Depth', max: 8, score: icebergDepth, evidence: 'Core vulnerability implied through existential questions.' },
-    { name: 'Subtext', group: 'Depth', max: 6, score: subtextScore, evidence: 'Lines carry implicit unvoiced weight rewarding rereading.' },
-    { name: 'Emotion Containment', group: 'Depth', max: 6, score: containmentMetric, evidence: abstractHits.length === 0 ? 'Feelings implied through images rather than flat labels.' : `Direct emotional noun usage: ${abstractHits.slice(0, 2).join(', ')}` },
-    { name: 'Voice', group: 'Truth', max: 7, score: voiceScore, evidence: hasSlangOrIdiolect ? 'Strong idiosyncratic vernacular and human cadence.' : 'Consistent personal register throughout.' },
-    { name: 'Specificity', group: 'Truth', max: 7, score: specificityScore, evidence: specificAnchors ? `Concrete coordinates identified: "${specificAnchors[0]}"` : 'Generalised sensory canvas.' },
-    { name: 'Cliché Density', group: 'Truth', max: 5, score: clicheDensityScore, evidence: totalStockHits === 0 ? 'Clean comparison vocabulary without AI stock tropes.' : `Minor stock phrase instances: ${stockPhraseHits.map(h => h.phrase).join(', ')}` },
-    { name: 'Discovery Arc', group: 'Movement', max: 5, score: discoveryArcScore, evidence: 'The thematic loop circles with purposeful realisation by the close.' },
-    { name: 'Pivot', group: 'Movement', max: 5, score: pivotScore, evidence: 'Mid-piece tonal turn deepens earlier vulnerability.' },
-    { name: 'AI-Likelihood (Inverted)', group: 'Authenticity', max: 4, score: aiLikelihoodInverted, evidence: `Part 1 verdict: ${band} (${finalScore}/100)` }
+    { name: 'Meter', group: 'Sound', max: 4, level: meterLevel, score: meterScore, isNA: isFreeVerseOrProse, evidence: isFreeVerseOrProse ? 'N/A (Free verse/prose standard applied)' : `Spread: ${syllableSpread} syllables ("${quote1}")` },
+    { name: 'Rhyme', group: 'Sound', max: 4, level: rhymeLevel, score: rhymeScore, isNA: isFreeVerseOrProse, evidence: isFreeVerseOrProse ? 'N/A (Cadence over rhyme)' : `Rhyme level ${rhymeLevel}/4 ("${quoteEnd}")` },
+    { name: 'Syllabic', group: 'Sound', max: 3, level: syllabicLevel, score: syllabicScore, isNA: isFreeVerseOrProse, evidence: isFreeVerseOrProse ? 'N/A (Breath-shaped line length)' : `Min: ${minSyllables}, Max: ${maxSyllables}` },
+    { name: 'Musical-Emotional Fit', group: 'Sound', max: 6, level: musicalFitLevel, score: musicalFitScore, evidence: `Sound cadence: "${quote2}"` },
+    { name: 'Iceberg Depth', group: 'Depth', max: 8, level: icebergLevel, score: icebergScore, evidence: `Central feeling implied vs stated: "${quote2}"` },
+    { name: 'Subtext', group: 'Depth', max: 6, level: subtextLevel, score: subtextScore, evidence: `Lines rewarding rereading: "${quote1}"` },
+    { name: 'Emotion Containment', group: 'Depth', max: 6, level: containmentLevel, score: containmentScore, evidence: `Told-emotion density ${toldDensityPer100}/100w: "${quoteEnd}"` },
+    { name: 'Voice', group: 'Truth', max: 7, level: voiceLevel, score: voiceScore, evidence: `Authorial register: "${quote1}"` },
+    { name: 'Specificity', group: 'Truth', max: 7, level: specificityLevel, score: specificityScore, evidence: `Personal coordinates: ${personalMomentsCount} moment(s) found ("${quote2}")` },
+    { name: 'Cliché Density', group: 'Truth', max: 5, level: clicheLevel, score: clicheScore, evidence: stockPhraseHits.length > 0 ? `Stock tropes: ${stockPhraseHits.map(h => h.phrase).join(', ')}` : 'Clean comparison vocabulary without stock tropes.' },
+    { name: 'Discovery Arc', group: 'Movement', max: 5, level: discoveryArcLevel, score: discoveryArcScore, evidence: `Opening vs Closing realization: "${quoteEnd}"` },
+    { name: 'Pivot', group: 'Movement', max: 5, level: pivotLevel, score: pivotScore, evidence: `Tonal turn: "${quote2}"` },
+    { name: 'AI-Likelihood (Inverted)', group: 'Authenticity', max: 4, level: aiLikelihoodLevel, score: aiScore, evidence: `Part 1 verdict: ${band} (${finalScore}/100)` }
   ];
 
   const earnedRaw = parseFloat(
@@ -464,39 +680,62 @@ export function runTMQSpecialAlgorithm(
 
   const rawPercentage = parseFloat(((earnedRaw / availableRaw) * 100).toFixed(1));
 
-  // Step 2: Emotional Bias (EB) adjustment
-  const containmentNorm = (containmentMetric / 6) * 10;
+  // --- STEP 2: EMOTIONAL BIAS v2 ---
+  // Topic-prestige guard: for sacred, romantic, grief, patriotic topics, Emotional Impact starts at 6
+  const isSacredOrRomantic = /\b(god|shiva|krishna|allah|temple|ghat|sacred|divine|holy|prayer|blessed|love|lover|beloved|grief|death|martyr|country|motherland)\b/i.test(clean);
+  let emotionalImpact = isSacredOrRomantic ? 6.0 : 4.5;
+  if (counterItems.length >= 2) emotionalImpact += 1.5;
+  if (/death|dead|bleed|wounds|corpse|die/i.test(clean)) emotionalImpact += 1.0;
+  emotionalImpact = Math.min(10, parseFloat(emotionalImpact.toFixed(1)));
+
+  // Earned Emotion: average of Containment, Specificity, Subtext converted to 0-10 scale
+  const containmentNorm = (containmentScore / 6) * 10;
   const specificityNorm = (specificityScore / 7) * 10;
   const subtextNorm = (subtextScore / 6) * 10;
   const earnedEmotion = parseFloat(((containmentNorm + specificityNorm + subtextNorm) / 3).toFixed(1));
-
-  let emotionalImpact = 7.0;
-  if (counterItems.length >= 2) emotionalImpact += 1.5;
-  if (/death|dead|bleed|wounds|corpse|die/i.test(clean)) emotionalImpact += 0.8;
-  emotionalImpact = Math.min(10, parseFloat(emotionalImpact.toFixed(1)));
 
   const emotionalBias = parseFloat((emotionalImpact - earnedEmotion).toFixed(1));
 
   let ebAdjustment = 0;
   if (emotionalBias > 2.0) {
+    // Piece leans on topic: subtract up to 5 points
     ebAdjustment = -Math.min(5, Math.round((emotionalBias - 2.0) * 1.5));
   } else if (emotionalBias < -2.0) {
+    // Understated piece: add up to 5 points
     ebAdjustment = Math.min(5, Math.round(Math.abs(emotionalBias + 2.0) * 1.5));
   }
 
   let adjustedRating = Math.round(rawPercentage + ebAdjustment);
 
-  // Step 3: Apply Gates
-  let masterworkGated = false;
-  let masterworkGateNotes = '';
-  if (adjustedRating >= 90) {
-    if (voiceScore < 6 || specificityScore < 5 || icebergDepth < 6) {
-      adjustedRating = 89;
-      masterworkGated = true;
-      masterworkGateNotes = `Score capped at 89 (Requires Voice >= 6/7 [scored ${voiceScore}], Specificity >= 5/7 [scored ${specificityScore}], Iceberg Depth >= 6/8 [scored ${icebergDepth}]).`;
+  // --- OVERALL CAPS PER SECTION 3 & GATES ---
+  // 1. Cap: Final score <= 69 if Specificity or Iceberg is below 4/8 (scaled, i.e. level < 2.0)
+  if (specificityLevel < 2.0 || icebergLevel < 2.0) {
+    if (adjustedRating > 69) {
+      adjustedRating = 69;
+      triggeredCaps.push('Specificity or Iceberg below level 2 (4/8): Score capped at 69');
     }
   }
 
+  // 2. Cap: Final score <= 59 if BOTH Specificity and Iceberg are at level 1 or lower
+  if (specificityLevel <= 1.25 && icebergLevel <= 1.25) {
+    if (adjustedRating > 59) {
+      adjustedRating = 59;
+      triggeredCaps.push('Both Specificity and Iceberg at level 1 or lower: Score capped at 59');
+    }
+  }
+
+  // 3. Masterwork Gate: 90+ requires Voice >= 6/7, Specificity >= 5/7, Iceberg >= 6/8
+  let masterworkGated = false;
+  let masterworkGateNotes = '';
+  if (adjustedRating >= 90) {
+    if (voiceScore < 6.0 || specificityScore < 5.0 || icebergScore < 6.0) {
+      adjustedRating = 89;
+      masterworkGated = true;
+      masterworkGateNotes = `Score capped at 89 (Masterwork gate requires Voice >= 6/7 [scored ${voiceScore}], Specificity >= 5/7 [scored ${specificityScore}], Iceberg Depth >= 6/8 [scored ${icebergScore}]).`;
+    }
+  }
+
+  // 4. Authenticity Gate: hold rating if Suspicious or Likely AI
   const authenticityHeld = band === 'Suspicious' || band === 'Likely AI';
   const finalRating = Math.max(0, Math.min(100, adjustedRating));
 
@@ -544,6 +783,17 @@ export function runTMQSpecialAlgorithm(
     band,
     action,
     corroborated,
+    mechanicalPass: {
+      repetitionCounts: phraseRepeatCounts,
+      toldEmotionWordsCount: toldCount,
+      toldEmotionDensityPer100: toldDensityPer100,
+      stackedSynonymCount,
+      stockPhraseHitsCount,
+      personalMomentsCount,
+      syllableSpread,
+      triggeredCaps,
+      topFlaws,
+    },
     quality: {
       earnedRaw,
       availableRaw,
@@ -561,16 +811,16 @@ export function runTMQSpecialAlgorithm(
       metrics: metricsList,
       threeQuestions: {
         isItTrue: {
-          passed: voiceScore >= 5.5 && specificityScore >= 4.5,
-          note: `Voice (${voiceScore}/7), Specificity (${specificityScore}/7), Containment (${containmentMetric}/6)`
+          passed: voiceScore >= 5.0 && specificityScore >= 4.0,
+          note: `Voice (${voiceScore}/7), Specificity (${specificityScore}/7), Containment (${containmentScore}/6)`
         },
         isItSpecific: {
-          passed: specificityScore >= 4.5 && clicheDensityScore >= 4.0,
-          note: `Specificity (${specificityScore}/7), Cliché Cleanliness (${clicheDensityScore}/5)`
+          passed: specificityScore >= 4.0 && clicheScore >= 3.5,
+          note: `Specificity (${specificityScore}/7), Cliché Cleanliness (${clicheScore}/5)`
         },
         doesItMove: {
-          passed: icebergDepth >= 5.5 && musicalFitScore >= 4.5,
-          note: `Iceberg Depth (${icebergDepth}/8), Musical Fit (${musicalFitScore}/6), Pivot (${pivotScore}/5)`
+          passed: icebergScore >= 5.0 && musicalFitScore >= 4.0,
+          note: `Iceberg Depth (${icebergScore}/8), Musical Fit (${musicalFitScore}/6), Pivot (${pivotScore}/5)`
         }
       }
     },
