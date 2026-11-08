@@ -30,32 +30,32 @@ export const Login: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-parchment flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-tmq-bg text-tmq-text flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex p-3 rounded-full bg-forest text-parchment mb-4 shadow-sm">
+        <div className="inline-flex p-3 rounded-card bg-tmq-brand-soft border border-tmq-border text-tmq-brand mb-4 shadow-sm">
           <Feather className="w-8 h-8" />
         </div>
-        <h2 className="font-serif text-3xl font-extrabold text-forest tracking-tight">THE MIDNIGHT QUILL</h2>
-        <p className="mt-1 text-sm text-ink/70 font-sans tracking-wide uppercase">
+        <h2 className="text-2xl font-bold text-tmq-text-strong tracking-tight">THE MIDNIGHT QUILL</h2>
+        <p className="mt-1 text-xs text-tmq-text-muted uppercase tracking-widest font-mono">
           Authenticity Desk &bull; Sign In
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white/80 backdrop-blur border border-moss/20 py-8 px-6 shadow-sm rounded-xl sm:px-10">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <div className="bg-tmq-surface border border-tmq-border py-8 px-6 shadow-sm rounded-card sm:px-10">
           {error && (
-            <div className="mb-4 bg-red-50 border-l-4 border-red-700 p-3 text-sm text-red-800 rounded">
+            <div className="mb-4 bg-red-950/40 border-l-4 border-red-500 p-3 text-sm text-red-300 rounded">
               {error}
             </div>
           )}
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-ink/80 mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-tmq-text-muted mb-1">
                 Email Address
               </label>
-              <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-ink/40">
+              <div className="relative rounded-btn shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-tmq-text-soft">
                   <Mail className="h-4 w-4" />
                 </div>
                 <input
@@ -63,18 +63,18 @@ export const Login: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-moss/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest focus:border-forest text-sm bg-parchment/30"
+                  className="block w-full pl-10 pr-3 py-2 border border-tmq-border rounded-btn focus:outline-none focus:border-tmq-brand text-sm bg-tmq-surface-2 text-tmq-text-strong placeholder:text-tmq-text-soft"
                   placeholder="editor@midnightquill.com"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-ink/80 mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-tmq-text-muted mb-1">
                 Password
               </label>
-              <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-ink/40">
+              <div className="relative rounded-btn shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-tmq-text-soft">
                   <Lock className="h-4 w-4" />
                 </div>
                 <input
@@ -82,7 +82,7 @@ export const Login: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-moss/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest focus:border-forest text-sm bg-parchment/30"
+                  className="block w-full pl-10 pr-3 py-2 border border-tmq-border rounded-btn focus:outline-none focus:border-tmq-brand text-sm bg-tmq-surface-2 text-tmq-text-strong placeholder:text-tmq-text-soft"
                 />
               </div>
             </div>
@@ -90,14 +90,14 @@ export const Login: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-parchment bg-forest hover:bg-forest/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-forest transition"
+              className="w-full flex justify-center py-2.5 px-4 rounded-btn text-sm font-medium text-tmq-on-brand bg-tmq-brand hover:opacity-90 focus:outline-none transition disabled:opacity-50"
             >
               {loading ? 'Verifying...' : 'Access Desk'}
             </button>
           </form>
 
           <div className="mt-5 text-center">
-            <Link to="/register" className="text-xs text-moss hover:text-forest underline font-medium">
+            <Link to="/register" className="text-xs text-tmq-brand hover:underline font-medium">
               Don't have an authenticity desk key? Request account &rarr;
             </Link>
           </div>

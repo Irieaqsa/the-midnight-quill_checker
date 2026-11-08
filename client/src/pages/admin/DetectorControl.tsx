@@ -34,25 +34,25 @@ export const DetectorControl: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white/70 backdrop-blur-sm border border-moss/20 rounded-xl p-6 shadow-sm">
-        <h1 className="font-serif text-2xl font-bold text-forest">Detector Calibration & Weighting</h1>
-        <p className="text-xs text-ink/70 mt-1">Configure which external APIs participate in the combined authenticity score.</p>
+      <div className="bg-tmq-surface border border-tmq-border rounded-card p-6 shadow-sm">
+        <h1 className="text-xl font-bold text-tmq-text-strong">Detector Calibration & Weighting</h1>
+        <p className="text-xs text-tmq-text-muted mt-1">Configure which external APIs participate in the combined authenticity score.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {providers.map((p) => (
-          <div key={p.id} className="bg-white/80 border border-moss/20 rounded-xl p-5 shadow-2xs space-y-4">
+          <div key={p.id} className="bg-tmq-surface border border-tmq-border rounded-card p-5 shadow-sm space-y-4">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-serif font-bold text-base text-forest">{p.name}</h3>
-                <span className="text-[10px] uppercase font-bold text-moss">Health: {p.health}</span>
+                <h3 className="font-bold text-sm text-tmq-text-strong">{p.name}</h3>
+                <span className="text-[10px] uppercase font-bold text-tmq-brand">Health: {p.health}</span>
               </div>
               <button
                 onClick={() => handleToggle(p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition ${
+                className={`px-3 py-1.5 rounded-btn text-xs font-semibold flex items-center space-x-1.5 transition ${
                   p.enabled
-                    ? 'bg-moss text-parchment hover:bg-moss/90'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'bg-tmq-brand text-tmq-on-brand hover:opacity-90'
+                    : 'bg-tmq-surface-2 text-tmq-text-muted hover:text-tmq-text'
                 }`}
               >
                 <Power className="w-3.5 h-3.5" />
@@ -60,10 +60,10 @@ export const DetectorControl: React.FC = () => {
               </button>
             </div>
 
-            <div className="pt-2 border-t border-moss/10">
+            <div className="pt-2 border-t border-tmq-border">
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-ink/60 font-medium">Ensemble Score Weight:</span>
-                <span className="font-mono font-bold text-forest">{p.weight}x</span>
+                <span className="text-tmq-text-muted font-medium">Ensemble Score Weight:</span>
+                <span className="font-mono font-bold text-tmq-brand">{p.weight}x</span>
               </div>
               <input
                 type="range"
@@ -72,9 +72,9 @@ export const DetectorControl: React.FC = () => {
                 step="0.1"
                 value={p.weight}
                 onChange={(e) => handleWeightChange(p, parseFloat(e.target.value))}
-                className="w-full accent-forest cursor-pointer"
+                className="w-full accent-tmq-brand cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-ink/40 mt-1">
+              <div className="flex justify-between text-[10px] text-tmq-text-soft mt-1">
                 <span>0.1x (Marginal)</span>
                 <span>1.0x (Standard)</span>
                 <span>3.0x (Dominant)</span>

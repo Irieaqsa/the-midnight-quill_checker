@@ -22,30 +22,30 @@ export const AuditLog: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white/70 backdrop-blur-sm border border-moss/20 rounded-xl p-6 shadow-sm">
-        <h1 className="font-serif text-2xl font-bold text-forest">Forensic Audit Log</h1>
-        <p className="text-xs text-ink/70 mt-1">Immutable ledger tracking every administrator access to author manuscripts, exports, and calibrations.</p>
+      <div className="bg-tmq-surface border border-tmq-border rounded-card p-6 shadow-sm">
+        <h1 className="text-xl font-bold text-tmq-text-strong">Forensic Audit Log</h1>
+        <p className="text-xs text-tmq-text-muted mt-1">Immutable ledger tracking every administrator access to author manuscripts, exports, and calibrations.</p>
       </div>
 
-      <div className="bg-white/90 border border-moss/20 rounded-xl shadow-sm overflow-hidden">
-        <div className="divide-y divide-moss/10 font-mono text-xs">
+      <div className="bg-tmq-surface border border-tmq-border rounded-card shadow-sm overflow-hidden">
+        <div className="divide-y divide-tmq-border font-mono text-xs">
           {logs.map((log) => (
-            <div key={log.id} className="p-3.5 hover:bg-parchment/30 flex items-center justify-between gap-4">
+            <div key={log.id} className="p-3.5 hover:bg-tmq-surface-2/60 transition-colors flex items-center justify-between gap-4">
               <div className="flex items-center space-x-3">
-                <Terminal className="w-4 h-4 text-moss flex-shrink-0" />
+                <Terminal className="w-4 h-4 text-tmq-brand flex-shrink-0" />
                 <div>
-                  <span className="font-bold text-forest mr-2">{log.action}</span>
+                  <span className="font-bold text-tmq-text-strong mr-2">{log.action}</span>
                   {log.targetType && (
-                    <span className="text-[11px] text-ink/70">
+                    <span className="text-[11px] text-tmq-text-muted">
                       [{log.targetType}: {log.targetId}]
                     </span>
                   )}
-                  <div className="text-[10px] text-ink/40 font-sans">
+                  <div className="text-[10px] text-tmq-text-soft font-sans mt-0.5">
                     Executed by {log.admin?.name} ({log.admin?.email}) from IP {log.ip}
                   </div>
                 </div>
               </div>
-              <div className="text-[11px] text-ink/50 whitespace-nowrap">
+              <div className="text-[11px] text-tmq-text-muted whitespace-nowrap">
                 {new Date(log.createdAt).toLocaleString()}
               </div>
             </div>

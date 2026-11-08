@@ -41,14 +41,14 @@ export const UsersManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white/70 backdrop-blur-sm border border-moss/20 rounded-xl p-6 shadow-sm">
-        <h1 className="font-serif text-2xl font-bold text-forest">Author Quota & Role Administration</h1>
-        <p className="text-xs text-ink/70 mt-1">Manage user access limits, credit allocations, and suspension states.</p>
+      <div className="bg-tmq-surface border border-tmq-border rounded-card p-6 shadow-sm">
+        <h1 className="text-xl font-bold text-tmq-text-strong">Author Quota & Role Administration</h1>
+        <p className="text-xs text-tmq-text-muted mt-1">Manage user access limits, credit allocations, and suspension states.</p>
       </div>
 
-      <div className="bg-white/90 border border-moss/20 rounded-xl shadow-sm overflow-x-auto">
+      <div className="bg-tmq-surface border border-tmq-border rounded-card shadow-sm overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead className="bg-moss/10 border-b border-moss/20 font-serif text-forest">
+          <thead className="bg-tmq-surface-2 border-b border-tmq-border text-tmq-text-strong">
             <tr>
               <th className="p-3">Author Name</th>
               <th className="p-3">Role</th>
@@ -58,40 +58,42 @@ export const UsersManagement: React.FC = () => {
               <th className="p-3 text-right">Administrative Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-moss/10">
+          <tbody className="divide-y divide-tmq-border">
             {users.map((u) => (
-              <tr key={u.id} className="hover:bg-parchment/30">
-                <td className="p-3 font-semibold text-ink">
+              <tr key={u.id} className="hover:bg-tmq-surface-2/60 transition-colors">
+                <td className="p-3 font-semibold text-tmq-text-strong whitespace-nowrap">
                   {u.name}
-                  <span className="block text-[10px] font-normal text-ink/50">{u.email}</span>
+                  <span className="block text-[10px] font-normal text-tmq-text-soft">{u.email}</span>
                 </td>
                 <td className="p-3">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sage/30 text-forest">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-tmq-brand-soft text-tmq-brand border border-tmq-border">
                     {u.role}
                   </span>
                 </td>
-                <td className="p-3 font-mono font-bold text-forest">{u.quotaRemaining} checks</td>
-                <td className="p-3">{u._count?.submissions || 0}</td>
+                <td className="p-3 font-mono font-bold text-tmq-brand">{u.quotaRemaining} checks</td>
+                <td className="p-3 text-tmq-text font-medium">{u._count?.submissions || 0}</td>
                 <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    u.status === 'ACTIVE' ? 'bg-moss/20 text-moss' : 'bg-red-100 text-red-700'
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                    u.status === 'ACTIVE' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                      : 'bg-red-500/10 text-red-400 border-red-500/20'
                   }`}>
                     {u.status}
                   </span>
                 </td>
-                <td className="p-3 text-right space-x-2">
+                <td className="p-3 text-right space-x-2 whitespace-nowrap">
                   <button
                     onClick={() => handleAdjustQuota(u.id, u.quotaRemaining)}
-                    className="px-2.5 py-1 border border-moss/30 rounded text-moss hover:bg-moss/10 transition"
+                    className="px-2.5 py-1 border border-tmq-border rounded-btn text-tmq-brand hover:bg-tmq-surface-2 transition"
                   >
                     Adjust Quota
                   </button>
                   <button
                     onClick={() => handleToggleStatus(u.id, u.status)}
-                    className={`px-2.5 py-1 border rounded transition ${
+                    className={`px-2.5 py-1 border rounded-btn transition ${
                       u.status === 'ACTIVE'
-                        ? 'border-red-300 text-red-700 hover:bg-red-50'
-                        : 'border-moss text-moss hover:bg-moss/10'
+                        ? 'border-red-500/40 text-red-400 hover:bg-red-500/10'
+                        : 'border-tmq-border text-tmq-brand hover:bg-tmq-surface-2'
                     }`}
                   >
                     {u.status === 'ACTIVE' ? 'Suspend' : 'Reactivate'}
