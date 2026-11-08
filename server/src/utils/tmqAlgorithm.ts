@@ -86,8 +86,10 @@ export interface TMQSpecialAnalysisResult {
     earnedEmotion: number;   // 0 - 10 (average of Containment, Specificity, Subtext)
     emotionalBias: number;   // Impact - Earned
     ebAdjustment: number;    // -5 to +5 (applied to percent)
-    gatedRating: number;
-    finalRating: number;
+    gatedRating: number;     // S (internal score)
+    internalScore: number;   // S (0 - 100)
+    displayScore: number;    // D (40 - 98) per v4 transform
+    finalRating: number;     // Displayed score D (40 - 98)
     band: 'Masterwork' | 'Excellent' | 'Strong' | 'Solid' | 'Promising' | 'Developing';
     masterworkGated: boolean;
     masterworkGateNotes?: string;
@@ -129,6 +131,39 @@ const TOLD_EMOTION_WORDS = [
   'crave', 'adore', 'bound', 'besotted', 'dilection', 'wane', 'passion',
   'deity', 'ganga', 'blessed', 'beloved', 'mercy', 'god', 'shiva', 'ghats', 'ghat'
 ];
+
+const KNOTS: [number, number][] = [
+  [0, 40],
+  [30, 45],
+  [45, 50],
+  [55, 62],
+  [65, 74],
+  [77, 86],
+  [84, 91],
+  [90, 95],
+  [100, 98]
+];
+
+export function toDisplay(s: number): number {
+  const x = Math.max(0, Math.min(100, s));
+  for (let i = 0; i < KNOTS.length - 1; i++) {
+    const [a, b] = KNOTS[i];
+    const [c, d] = KNOTS[i + 1];
+    if (x <= c) {
+      return Math.round((b + ((d - b) * (x - a)) / (c - a)) * 10) / 10;
+    }
+  }
+  return 98;
+}
+
+export function getTierFromDisplay(d: number): 'Masterwork' | 'Excellent' | 'Strong' | 'Solid' | 'Promising' | 'Developing' {
+  if (d >= 90) return 'Masterwork';
+  if (d >= 80) return 'Excellent';
+  if (d >= 70) return 'Strong';
+  if (d >= 60) return 'Solid';
+  if (d >= 50) return 'Promising';
+  return 'Developing';
+}
 
 function countSyllables(word: string): number {
   const clean = word.toLowerCase().replace(/[^a-z]/g, '');
@@ -811,26 +846,23 @@ export function runTMQSpecialAlgorithm(
   }
 
   const authenticityHeld = band === 'Suspicious' || band === 'Likely AI';
-  const finalRating = Math.max(0, Math.min(100, adjustedRating));
+  // Internal Score S (0 to 100)
+  const internalScore = Math.max(0, Math.min(100, adjustedRating));
 
-  // Nearest calibration library piece
+  // Display Score D (40 to 98) via v4 monotone piecewise-linear transform
+  const displayScore = toDisplay(internalScore);
+  const qualityBand = getTierFromDisplay(displayScore);
+
+  // Nearest calibration library piece by internal score S
   let nearestPiece = calibrationLibrary.pieces[0];
   let minDiff = 999;
   for (const p of calibrationLibrary.pieces) {
-    const diff = Math.abs(p.final_score - finalRating);
+    const diff = Math.abs(p.final_score - internalScore);
     if (diff < minDiff) {
       minDiff = diff;
       nearestPiece = p;
     }
   }
-
-  // Quality Band
-  let qualityBand: 'Masterwork' | 'Excellent' | 'Strong' | 'Solid' | 'Promising' | 'Developing' = 'Developing';
-  if (finalRating >= 90) qualityBand = 'Masterwork';
-  else if (finalRating >= 80) qualityBand = 'Excellent';
-  else if (finalRating >= 70) qualityBand = 'Strong';
-  else if (finalRating >= 60) qualityBand = 'Solid';
-  else if (finalRating >= 50) qualityBand = 'Promising';
 
   return {
     isApplicable: true,
@@ -887,8 +919,10 @@ export function runTMQSpecialAlgorithm(
       earnedEmotion,
       emotionalBias,
       ebAdjustment,
-      gatedRating: adjustedRating,
-      finalRating,
+      gatedRating: internalScore,
+      internalScore,
+      displayScore,
+      finalRating: displayScore,
       band: qualityBand,
       masterworkGated,
       masterworkGateNotes: masterworkGateNotes || undefined,

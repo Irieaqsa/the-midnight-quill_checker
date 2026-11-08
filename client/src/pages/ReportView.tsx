@@ -428,12 +428,17 @@ export const ReportView: React.FC = () => {
                   </span>
                   <div className="flex items-baseline space-x-3 mt-1">
                     <span className="text-4xl sm:text-5xl font-bold text-tmq-text-strong font-mono">
-                      {tmqSpecialData.quality.finalRating}
+                      {tmqSpecialData.quality.displayScore ?? tmqSpecialData.quality.finalRating}
                     </span>
                     <span className="text-[18px] text-tmq-text-muted font-medium">/ 100</span>
                     <span className="text-[14px] font-semibold px-2.5 py-0.5 rounded-pill bg-tmq-brand-soft text-tmq-brand">
                       {tmqSpecialData.quality.band}
                     </span>
+                    {tmqSpecialData.quality.internalScore !== undefined && (
+                      <span className="text-[11px] font-mono text-tmq-text-soft">
+                        (internal: {tmqSpecialData.quality.internalScore})
+                      </span>
+                    )}
                   </div>
                 </div>
 
