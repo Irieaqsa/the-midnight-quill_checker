@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { Feather, History, Shield, Users, Cpu, FileText, LogOut, Sun, Moon } from 'lucide-react';
+import { Feather, History, Shield, Users, Cpu, FileText, LogOut, Sun, Moon, KeyRound } from 'lucide-react';
+import { ChangePasswordModal } from './ChangePasswordModal';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -94,6 +96,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   {user.name}
                 </span>
                 <button
+                  onClick={() => setIsPasswordModalOpen(true)}
+                  className="p-2 rounded-btn text-tmq-text-soft hover:text-tmq-brand hover:bg-tmq-surface-2 border border-transparent hover:border-tmq-border transition-colors"
+                  title="Change Password"
+                >
+                  <KeyRound className="w-4 h-4" />
+                </button>
+                <button
                   onClick={handleLogout}
                   className="p-2 rounded-btn text-tmq-text-soft hover:text-tmq-danger hover:bg-tmq-surface-2 border border-transparent hover:border-tmq-border transition-colors"
                   title="Sign Out"
@@ -141,6 +150,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <History className="w-4 h-4 text-tmq-text-muted" />
               <span>Ledger History</span>
             </Link>
+
+            <button
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-btn text-[14px] font-medium text-tmq-text-muted hover:text-tmq-text hover:bg-tmq-surface-2 transition-colors text-left"
+            >
+              <KeyRound className="w-4 h-4 text-tmq-text-muted" />
+              <span>Change Password</span>
+            </button>
 
             {user?.role === 'ADMIN' && (
               <>
@@ -209,6 +226,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <span className="font-mono text-[11px] text-tmq-text-faint">Probability, not proof. A human reviews every flag.</span>
         </div>
       </footer>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
     </div>
   );
 };

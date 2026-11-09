@@ -128,8 +128,9 @@ router.post(
 // Get current profile
 router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
+    const userId = req.user?.id || req.user?.userId;
     const user = await prisma.user.findUnique({
-      where: { id: req.user!.userId },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
@@ -153,6 +154,59 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response)
     res.status(500).json({ error: err.message });
   }
 });
+
+// Change Password (for logged in user)
+router.post(
+  '/change-password',
+  authenticate,
+  [
+    body('currentPassword').notEmpty().withMessage('Current password is required'),
+    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters long'),
+  ],
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ error: errors.array()[0].msg });
+        return;
+      }
+
+      const userId = req.user?.id || req.user?.userId;
+      const { currentPassword, newPassword } = req.body;
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, passwordHash: true },
+      });
+
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+
+      const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isMatch) {
+        res.status(400).json({ error: 'Incorrect current password' });
+        return;
+      }
+
+      if (currentPassword === newPassword) {
+        res.status(400).json({ error: 'New password must be different from current password' });
+        return;
+      }
+
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash },
+      });
+
+      res.json({ message: 'Password changed successfully' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
 
 // Mock WhatsApp verify
 router.post('/whatsapp/send-code', authenticate, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
