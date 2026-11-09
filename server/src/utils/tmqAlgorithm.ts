@@ -86,6 +86,10 @@ export interface TMQSpecialAnalysisResult {
     earnedEmotion: number;   // 0 - 10 (average of Containment, Specificity, Subtext)
     emotionalBias: number;   // Impact - Earned
     ebAdjustment: number;    // -5 to +5 (applied to percent)
+    tierAdjustment?: {
+      tier: 'very bad' | 'bad' | 'okayish' | 'good' | 'better' | 'excellent';
+      points: number;
+    };
     gatedRating: number;     // S (internal score)
     internalScore: number;   // S (0 - 100)
     displayScore: number;    // D (40 - 98) per v4 transform
@@ -808,6 +812,40 @@ export function runTMQSpecialAlgorithm(
 
   let adjustedRating = Math.round(rawPercentage + ebAdjustment);
 
+  // Quality Tier Bonus / Deduction Rule:
+  // - Very bad: deduct 5-7 marks (average -6)
+  // - Bad: deduct 3-5 marks (average -4)
+  // - Okayish: add 1 mark (+1)
+  // - Good: add 5 marks (+5)
+  // - Better: add 7-8 marks (average +7.5)
+  // - Excellent: add 10-12 marks (average +11)
+  let qualityTierCategory: 'very bad' | 'bad' | 'okayish' | 'good' | 'better' | 'excellent' = 'okayish';
+  let tierAdjustmentPoints = 0;
+
+  if (rawPercentage < 35 || isUnparsable) {
+    qualityTierCategory = 'very bad';
+    tierAdjustmentPoints = -6; // deduct 5-7 marks
+    triggeredCaps.push('Quality Tier: Very Bad (Deducted 6 marks from total)');
+  } else if (rawPercentage < 48) {
+    qualityTierCategory = 'bad';
+    tierAdjustmentPoints = -4; // deduct 3-5 marks
+    triggeredCaps.push('Quality Tier: Bad (Deducted 4 marks from total)');
+  } else if (rawPercentage < 65) {
+    qualityTierCategory = 'okayish';
+    tierAdjustmentPoints = 1; // add 1 mark
+  } else if (rawPercentage < 75) {
+    qualityTierCategory = 'good';
+    tierAdjustmentPoints = 5; // add 5 marks
+  } else if (rawPercentage < 83) {
+    qualityTierCategory = 'better';
+    tierAdjustmentPoints = 7.5; // add 7-8 marks
+  } else {
+    qualityTierCategory = 'excellent';
+    tierAdjustmentPoints = 11; // add 10-12 marks
+  }
+
+  adjustedRating = Math.round(adjustedRating + tierAdjustmentPoints);
+
   // Overall Caps:
   // Final <= 30 if legibility gate triggers (severe syntax collapse / rare misused words)
   if (isUnparsable) {
@@ -919,6 +957,10 @@ export function runTMQSpecialAlgorithm(
       earnedEmotion,
       emotionalBias,
       ebAdjustment,
+      tierAdjustment: {
+        tier: qualityTierCategory,
+        points: tierAdjustmentPoints,
+      },
       gatedRating: internalScore,
       internalScore,
       displayScore,

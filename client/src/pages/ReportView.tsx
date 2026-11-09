@@ -442,18 +442,38 @@ export const ReportView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Emotional Bias Chip per DESIGN.md */}
-                <div className="p-2.5 bg-tmq-surface-2 border border-tmq-border rounded-md text-right">
-                  <div className="text-[11px] uppercase tracking-wider text-tmq-text-soft font-semibold">
-                    Emotional Bias
-                  </div>
-                  <div className="flex items-center gap-2 mt-0.5 justify-end">
-                    <span className="text-[13px] font-semibold text-tmq-text-strong">
-                      {tmqSpecialData.quality.emotionalBias > 2 ? 'Leaning' : tmqSpecialData.quality.emotionalBias < -2 ? 'Understated' : 'Earned'}
-                    </span>
-                    <span className="text-[11px] font-mono text-tmq-text-muted">
-                      ({tmqSpecialData.quality.emotionalBias > 0 ? `+${tmqSpecialData.quality.emotionalBias}` : tmqSpecialData.quality.emotionalBias})
-                    </span>
+                {/* Quality & Emotional Bias Chips */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {tmqSpecialData.quality.tierAdjustment && (
+                    <div className="p-2.5 bg-tmq-surface-2 border border-tmq-border rounded-md text-right">
+                      <div className="text-[11px] uppercase tracking-wider text-tmq-text-soft font-semibold">
+                        Craft Tier
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-0.5 justify-end">
+                        <span className="text-[13px] font-semibold capitalize text-tmq-text-strong">
+                          {tmqSpecialData.quality.tierAdjustment.tier}
+                        </span>
+                        <span className={`text-[11px] font-mono font-bold ${
+                          tmqSpecialData.quality.tierAdjustment.points >= 0 ? 'text-tmq-brand' : 'text-red-400'
+                        }`}>
+                          ({tmqSpecialData.quality.tierAdjustment.points > 0 ? `+${tmqSpecialData.quality.tierAdjustment.points}` : tmqSpecialData.quality.tierAdjustment.points} pts)
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="p-2.5 bg-tmq-surface-2 border border-tmq-border rounded-md text-right">
+                    <div className="text-[11px] uppercase tracking-wider text-tmq-text-soft font-semibold">
+                      Emotional Bias
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5 justify-end">
+                      <span className="text-[13px] font-semibold text-tmq-text-strong">
+                        {tmqSpecialData.quality.emotionalBias > 2 ? 'Leaning' : tmqSpecialData.quality.emotionalBias < -2 ? 'Understated' : 'Earned'}
+                      </span>
+                      <span className="text-[11px] font-mono text-tmq-text-muted">
+                        ({tmqSpecialData.quality.emotionalBias > 0 ? `+${tmqSpecialData.quality.emotionalBias}` : tmqSpecialData.quality.emotionalBias})
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
