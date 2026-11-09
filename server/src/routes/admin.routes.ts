@@ -1,4 +1,6 @@
 import { Router, Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import prisma from '../config/database';
 import { authenticate, requireAdmin, AuthenticatedRequest } from '../middleware/auth';
 
@@ -206,6 +208,13 @@ router.patch('/users/:id', async (req: AuthenticatedRequest, res: Response): Pro
   try {
     const id = req.params.id as string;
     const { quotaRemaining, status, role } = req.body;
+
+    // Prevent demoting own self from ADMIN
+    if (role && role !== 'ADMIN' && req.user && req.user.id === id) {
+      res.status(400).json({ error: 'You cannot remove your own admin privileges.' });
+      return;
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: {
@@ -219,7 +228,7 @@ router.patch('/users/:id', async (req: AuthenticatedRequest, res: Response): Pro
       await prisma.auditLog.create({
         data: {
           adminId: req.user.id,
-          action: 'UPDATE_USER',
+          action: role ? 'UPDATE_USER_ROLE' : 'UPDATE_USER',
           targetType: 'USER',
           targetId: updated.id,
           ip: req.ip || '127.0.0.1',
@@ -228,6 +237,56 @@ router.patch('/users/:id', async (req: AuthenticatedRequest, res: Response): Pro
     }
 
     res.json({ user: updated });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Generate One-Time Temporary Password for user
+router.post('/users/:id/generate-otp', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const id = req.params.id as string;
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+    if (!targetUser) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Generate random 8-character temporary password
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let tempPassword = '';
+    const bytes = crypto.randomBytes(8);
+    for (let i = 0; i < 8; i++) {
+      tempPassword += chars[bytes[i] % chars.length];
+    }
+
+    const passwordHash = await bcrypt.hash(tempPassword, 10);
+    await prisma.user.update({
+      where: { id },
+      data: { passwordHash },
+    });
+
+    if (req.user) {
+      await prisma.auditLog.create({
+        data: {
+          adminId: req.user.id,
+          action: 'GENERATE_USER_OTP',
+          targetType: 'USER',
+          targetId: id,
+          ip: req.ip || '127.0.0.1',
+        },
+      });
+    }
+
+    res.json({
+      message: 'One-time password generated successfully',
+      tempPassword,
+      user: {
+        id: targetUser.id,
+        email: targetUser.email,
+        name: targetUser.name,
+      },
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
